@@ -13,6 +13,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
+import net.vukrosic.custommobswordsmod.entity.custom.fireenderman.CombustometerManager;
 
 import java.util.Random;
 
@@ -55,10 +56,13 @@ public class FirePearlEntity extends EnderPearlEntity {
 
         /*((PlayerEntityExt) thrower).setCombusometerEffect(true);
         ((PlayerEntityExt) thrower).addCombustomenter();*/
-        thrower.sendMessage(Text.of("Combustometer PLAYER IS NOT NULL: "), false);
+        if(!CombustometerManager.players.contains(thrower.getUuid())){
+            CombustometerManager.players.add(thrower.getUuid());
+        }
+        /*
         if(((PlayerEntityExt)thrower).hasCombusometerEffect() == false){
             ((PlayerEntityExt)thrower).setCombusometerEffect(true);
-        }
+        }*/
 
         //thrower.kill();
 

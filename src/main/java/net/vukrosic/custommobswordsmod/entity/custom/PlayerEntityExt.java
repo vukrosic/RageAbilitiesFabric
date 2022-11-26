@@ -1,5 +1,6 @@
 package net.vukrosic.custommobswordsmod.entity.custom;
 
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.Vec3d;
 import net.vukrosic.custommobswordsmod.entity.custom.frogking.FrogKingEntity;
 import net.vukrosic.custommobswordsmod.entity.custom.shieldingshulker.ShieldingShulkerEntity;
@@ -14,6 +15,16 @@ public interface PlayerEntityExt {
 
     public boolean hasChickenEffect = false;
     boolean isInChickenDimention = false;*/
+    // bedAbility
+    boolean isBedAbilityActive = false;
+    // bed ability getter and setter
+    public void setBedAbilityActive(boolean isBedAbilityActive);
+    public boolean getBedAbilityActive();
+
+    LivingEntity pickedEntity = null;
+    // getter and setter
+    LivingEntity getPickedEntity();
+    void setPickedEntity(LivingEntity pickedEntity);
 
     void setNeedsToGetVelocity(boolean needsToGetVelocity);
     void setVelocityFrogKingSummon(Vec3d velocityFrogKingSummon);

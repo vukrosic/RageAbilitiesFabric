@@ -17,6 +17,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.Packet;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -29,6 +31,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
+import net.vukrosic.custommobswordsmod.mixin.ClientWorldMixin;
 import software.bernie.example.ClientListener;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
@@ -191,6 +194,29 @@ public class ChunkenRocketEntity extends PersistentProjectileEntity implements I
             }
             this.updatePosition(h, j, k);
             this.checkBlockCollision();
+        }
+        
+        
+        spawnParticles();
+    }
+    
+    
+    public void spawnParticles(){
+        if (!this.world.isClient) {
+            for (int i = 0; i < 15; ++i) {
+                double d = this.random.nextGaussian() * 0.02D;
+                double e = this.random.nextGaussian() * 0.02D;
+                double f = this.random.nextGaussian() * 0.02D;
+                double g = 10.0D;
+
+                //((ServerWorld) this.world).spawnParticles(ParticleTypes.WITCH, getX(), getY(), getZ(), 1, 0, 0, 0, 1);
+                ((ServerWorld) this.world).spawnParticles(ParticleTypes.POOF, getX(), getY(), getZ(), 1, 0, 0, 0, 1);
+                if( i % 2 == 0){
+                    ((ServerWorld) this.world).spawnParticles(ParticleTypes.SMOKE, getX(), getY(), getZ(), 1, 0, 0, 0, 1);
+                    ((ServerWorld) this.world).spawnParticles(ParticleTypes.EXPLOSION, getX(), getY(), getZ(), 1, 0, 0, 0, 1);
+                }
+                //this.world.addParticle(ParticleTypes.POOF, this.getX() + (double) (this.random.nextFloat() * this.getWidth() * 2.0F) - (double) this.getWidth() - d * 10.0D, this.getY() + (double) (this.random.nextFloat() * this.getHeight()) - e * 10.0D, this.getZ() + (double) (this.random.nextFloat() * this.getWidth() * 2.0F) - (double) this.getWidth() - f * 10.0D, d, e, f);
+            }
         }
     }
 

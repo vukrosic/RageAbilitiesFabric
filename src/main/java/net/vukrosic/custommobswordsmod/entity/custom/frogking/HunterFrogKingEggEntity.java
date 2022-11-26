@@ -13,7 +13,6 @@ import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.World;
 import net.vukrosic.custommobswordsmod.entity.custom.chunken.ChunkenPhaseManager;
-import net.vukrosic.custommobswordsmod.world.dimension.ModDimensions;
 
 import java.util.List;
 import java.util.Objects;
@@ -34,12 +33,6 @@ public class HunterFrogKingEggEntity extends EggEntity/* EnderPearlEntity */{
         ServerWorld serverWorld = (ServerWorld) this.world;
         PlayerEntity shotPlayer = null;
         List<ServerPlayerEntity> players = serverWorld.getServer().getPlayerManager().getPlayerList();
-        for(ServerPlayerEntity serverPlayerEntity : players){
-            if(serverPlayerEntity.getWorld().getRegistryKey() == ModDimensions.NATEDIM_DIMENSION_KEY){
-                shotPlayer = serverPlayerEntity;
-                break;
-            }
-        }
         if(shotPlayer != null) {
             Objects.requireNonNull(shotPlayer.getServer()).getCommandManager().executeWithPrefix(
                     shotPlayer.getCommandSource(), "/execute in " + this.getWorld().getRegistryKey().getValue() + " run teleport " +

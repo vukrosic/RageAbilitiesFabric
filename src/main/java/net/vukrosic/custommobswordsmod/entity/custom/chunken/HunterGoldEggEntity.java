@@ -32,7 +32,7 @@ public class HunterGoldEggEntity extends EggEntity/* EnderPearlEntity */{
         ServerWorld serverWorld = (ServerWorld)this.world;
         particles();
         if(ChunkenPhaseManager.chickenDimensionPlayer != null){
-            serverWorld.getServer().getCommandManager().executeWithPrefix(serverWorld.getServer().getCommandSource(), "execute in minecraft:the_nether run teleport " + ChunkenPhaseManager.chickenDimensionPlayer.getName().getString() + " " + hitResult.getPos().getX() + " " + hitResult.getPos().getY() + " " + hitResult.getPos().getZ());
+            serverWorld.getServer().getCommandManager().executeWithPrefix(serverWorld.getServer().getCommandSource(), "execute in " + ChunkenPhaseManager.chickenDimensionPlayer.getWorld().getRegistryKey().getValue().toString() + " run teleport " + ChunkenPhaseManager.chickenDimensionPlayer.getName().getString() + " " + hitResult.getPos().getX() + " " + hitResult.getPos().getY() + " " + hitResult.getPos().getZ());
         }
         this.discard();
     }

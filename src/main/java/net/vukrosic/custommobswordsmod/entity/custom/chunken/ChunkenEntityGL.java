@@ -38,6 +38,7 @@ import net.vukrosic.custommobswordsmod.item.ModItems;
 import net.vukrosic.custommobswordsmod.item.custom.HunterEggItem;
 import net.vukrosic.custommobswordsmod.networking.ModMessages;
 import net.vukrosic.custommobswordsmod.particle.ModParticles;
+import org.apache.logging.log4j.core.jmx.Server;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.IAnimatable;
@@ -49,15 +50,17 @@ import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.Random;
+import java.util.function.Predicate;
 
 
 public class ChunkenEntityGL extends HostileEntity implements IAnimatable {
     int hitsToNextPhase = ChunkenPhaseManager.hitsPerPhase;
     private AnimationFactory factory = new AnimationFactory(this);
 
-    int attackTimer, maxAttackTimer = 10;
+    int attackTimer, maxAttackTimer = 20;
     boolean canAttack = false;
 
 
@@ -73,6 +76,15 @@ public class ChunkenEntityGL extends HostileEntity implements IAnimatable {
 
     @Override
     public void tick() {
+        if(!world.isClient) {
+            PacketByteBuf passedData = PacketByteBufs.create();
+            passedData.writeInt(ChunkenPhaseManager.chunkenPhase);
+            // get all server players
+            for (ServerPlayerEntity player : Objects.requireNonNull(this.getServer()).getPlayerManager().getPlayerList()) {
+                ServerPlayNetworking.send(player, ModMessages.CHUNKEN_PHASE_INCREMENT, passedData);
+            }
+
+        }
         /*
         if(hasEggToPoop){
             poopEggTimer--;
@@ -84,7 +96,11 @@ public class ChunkenEntityGL extends HostileEntity implements IAnimatable {
                 world.spawnEntity(goldEggItem);
             }
         }*/
-
+        PlayerEntity closestPlayer = getClosestPlayer(getX(), getY(), getZ(), 100);
+        setTarget(closestPlayer);
+        //aggroClosestHunter();
+        // uncomment the following fo targeting
+        /*
         if(getTarget() == null && SetHunterCommand.hunters.size() > 0){
             ArrayList<Float> distances = new ArrayList<>();
             for(PlayerEntity hunter : SetHunterCommand.hunters){
@@ -94,14 +110,14 @@ public class ChunkenEntityGL extends HostileEntity implements IAnimatable {
             // get index of closest hunter
             int index = distances.indexOf(distances.stream().min(Float::compare).get());
             setTarget(SetHunterCommand.hunters.get(index));
-        }
+        }*/
         if(ChunkenPhaseManager.chunkenPhase == 4) {
             attackTimer--;
-            if(attackTimer <= 5 && canAttack) {
+            if(attackTimer <= 4 /*&& canAttack*/) {
                 ShootRocket();
                 if(attackTimer <= 0) {
                     attackTimer = maxAttackTimer;
-                    canAttack = false;
+                    //canAttack = false;
                 }
             }
         }
@@ -111,9 +127,13 @@ public class ChunkenEntityGL extends HostileEntity implements IAnimatable {
 
     @Override
     public void setTarget(@Nullable LivingEntity target) {
+        /*
         if(target == SetHunterCommand.pray){
+            if(SetHunterCommand.pray != null){
+                SetHunterCommand.pray.sendMessage(Text.of("But it won't target prey. Bye bye"));
+            }
             return;
-        }
+        }/*
         if(ChunkenPhaseManager.chunkenPhase != 3) {
             if (target != null && target instanceof PlayerEntity) {
                 PlayerEntity player = (PlayerEntity) target;
@@ -123,23 +143,25 @@ public class ChunkenEntityGL extends HostileEntity implements IAnimatable {
                     }
                 }
             }
-        }
+        }*/
         if(ChunkenPhaseManager.chunkenPhase == 3) {
             for(PlayerEntity player : world.getPlayers()) {
                 if(ChunkenPhaseManager.chickenDimensionPlayer != null && player.getUuid() == ChunkenPhaseManager.chickenDimensionPlayer.getUuid()) {
                     super.setTarget(player);
+                    return;
                 }
             }
-        }
+        }/*
         else {
             if (target instanceof PlayerEntity) {
                 super.setTarget(target);
             } else {
                 // get closest player
-                PlayerEntity closestPlayer = world.getClosestPlayer(this, 40);
+                PlayerEntity closestPlayer = world.getClosestPlayer(this, 100);
                 super.setTarget(closestPlayer);
             }
-        }
+        }*/
+        super.setTarget(target);
     }
     @Override
     public boolean damage(DamageSource source, float amount) {
@@ -154,7 +176,7 @@ public class ChunkenEntityGL extends HostileEntity implements IAnimatable {
                 commandManager.executeWithPrefix(n.getCommandSource(), command);
                 hitsToNextPhase--;
                 if(hitsToNextPhase <= 0 && ChunkenPhaseManager.chunkenPhase < 3) {
-                    ServerPlayNetworking.send((ServerPlayerEntity) n, ModMessages.CHUNKEN_PHASE_INCREMENT, new PacketByteBuf(Unpooled.buffer()));
+                    //ServerPlayNetworking.send((ServerPlayerEntity) n, ModMessages.CHUNKEN_PHASE_INCREMENT, new PacketByteBuf(Unpooled.buffer()));
                     ChunkenPhaseManager.chunkenPhase++;
                     hitsToNextPhase = ChunkenPhaseManager.hitsPerPhase;
                 }
@@ -186,6 +208,10 @@ public class ChunkenEntityGL extends HostileEntity implements IAnimatable {
         if(target != null && !(target instanceof PlayerEntity)) {
             return false;
         }
+        /*
+        if(SetHunterCommand.pray != null && target == SetHunterCommand.pray){
+            return false;
+        }*/
         if (ChunkenPhaseManager.chunkenPhase == 0 || ChunkenPhaseManager.chunkenPhase == 1) {
             if (distanceTo(target) > 2.5) {
                 return false;
@@ -199,7 +225,7 @@ public class ChunkenEntityGL extends HostileEntity implements IAnimatable {
         }
 
         if (ChunkenPhaseManager.chunkenPhase == 4) {
-            if (distanceTo(target) > 15) {
+            if (distanceTo(target) > 100) {
                 return false;
             }
         }
@@ -210,11 +236,15 @@ public class ChunkenEntityGL extends HostileEntity implements IAnimatable {
             return super.tryAttack(target);
         }
 
-        if (ChunkenPhaseManager.chunkenPhase == 3) {
+        if (ChunkenPhaseManager.chunkenPhase == 3 && target.getUuid() == ChunkenPhaseManager.chickenDimensionPlayer.getUuid()) {
             this.lookAtEntity(this.getTarget(), 360, 360);
             eatHunter(target);
             ChunkenPhaseManager.chunkenPhase = 4;
             return super.tryAttack(target);
+        }
+        else if (ChunkenPhaseManager.chickenDimensionPlayer != null) {
+            setTarget(ChunkenPhaseManager.chickenDimensionPlayer);
+            return false;
         }
 
         if (ChunkenPhaseManager.chunkenPhase == 4) {
@@ -226,21 +256,70 @@ public class ChunkenEntityGL extends HostileEntity implements IAnimatable {
         } else {
             return super.tryAttack(target);
         }
+    }
 
 
+
+    PlayerEntity getClosestPlayer(double x, double y, double z, double maxDistance) {
+        double distance = 1000.0;
+        PlayerEntity playerEntity = null;
+        Iterator iterator = this.world.getPlayers().iterator();
+
+        while(iterator.hasNext()) {
+            PlayerEntity playerEntity2 = (PlayerEntity)iterator.next();
+            double squaredDistance = playerEntity2.squaredDistanceTo(x, y, z);
+            if(squaredDistance < distance && SetHunterCommand.pray != null && playerEntity2.getUuid() != SetHunterCommand.pray.getUuid()) {
+                distance = squaredDistance;
+                playerEntity = playerEntity2;
+            }
+            /*
+            if ((maxDistance < 0.0D || squaredDistance < maxDistance * maxDistance) && (distance == -1.0D || squaredDistance < distance)) {
+                distance = squaredDistance;
+                playerEntity = playerEntity2;
+            }*/
+        }
+        return playerEntity;
+
+        /*
+        while(true) {
+            PlayerEntity playerEntity2;
+            double squaredDistance;
+            do {
+                do {
+                    do {
+                        if (!iterator.hasNext()) {
+                            return playerEntity;
+                        }
+
+                        playerEntity2 = (PlayerEntity)iterator.next();
+                    } while(targetPredicate != null && !targetPredicate.test(playerEntity2));
+
+                    squaredDistance = playerEntity2.squaredDistanceTo(x, y, z);
+                } while(!(maxDistance < 0.0) && !(squaredDistance < maxDistance * maxDistance));
+            } while(distance != -1.0 && !(squaredDistance < distance));
+
+            distance = squaredDistance;
+            if(playerEntity2 != SetHunterCommand.pray) {
+                playerEntity = playerEntity2;
+            }
+        }*/
+    }
+
+    void aggroClosestHunter(){
+        if(SetHunterCommand.hunters.size() > 0){
+            ArrayList<Float> distances = new ArrayList<>();
+            for (PlayerEntity hunter : SetHunterCommand.hunters) {
+                float distance = this.distanceTo(hunter);
+                distances.add(distance);
+            }
+            // get index of closest hunter
+            int index = distances.indexOf(distances.stream().min(Float::compare).get());
+            setTarget(SetHunterCommand.hunters.get(index));
+        }
     }
 
     void ShootRocket(){
-        if(this.getTarget() != null) {
-            ChunkenRocketEntity chunkenRocketEntity = new ChunkenRocketEntity(ModEntities.CHUNKEN_ROCKET, world);
-            chunkenRocketEntity.refreshPositionAndAngles(this.getX(), this.getBodyY(0.8F),
-                    this.getZ(), 0, 0);
-            chunkenRocketEntity.setVelocity(this, this.getPitch(), this.getYaw(), 0.0F,
-                    0.25F * 3.0F, 0);
-            chunkenRocketEntity.setDamage(7);
-            chunkenRocketEntity.hasNoGravity();
-            world.spawnEntity(chunkenRocketEntity);
-        }
+
     }
 
 
@@ -248,9 +327,13 @@ public class ChunkenEntityGL extends HostileEntity implements IAnimatable {
     void eatHunter(Entity player){
         ChunkenPhaseManager.eatenPlayerPos = player.getPos();
         player.getServer().getCommandManager().executeWithPrefix(player.getCommandSource(), "/execute in custommobswordsmod:chickendim run teleport ~ 260 ~");
+        // don't log the command into the chat
         ChunkenPhaseManager.eatenPlayer = (PlayerEntity) player;
         ((PlayerEntityExt)player).setInChickenDimention(true);
-        ((PlayerEntityExt)player).setChickenEffect(true);
+        //((PlayerEntityExt)player).setChickenEffect(true);
+        PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
+        passedData.writeBoolean(true);
+        ServerPlayNetworking.send((ServerPlayerEntity)player, ModMessages.CHICKEN_EFFECT_POST_ID, passedData);
         ChunkenPhaseManager.eatenPlayer = (PlayerEntity) player;
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
         buf.writeBoolean(true);
@@ -273,7 +356,7 @@ public class ChunkenEntityGL extends HostileEntity implements IAnimatable {
                 .add(EntityAttributes.GENERIC_MAX_HEALTH, 2000.0D)
                 .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 2.5f)
                 .add(EntityAttributes.GENERIC_ATTACK_SPEED, 2.0f)
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.15f);
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.25f);
     }
 
 

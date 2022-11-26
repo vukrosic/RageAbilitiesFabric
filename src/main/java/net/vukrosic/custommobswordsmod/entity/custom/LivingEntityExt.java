@@ -1,7 +1,7 @@
 package net.vukrosic.custommobswordsmod.entity.custom;
 
 public interface LivingEntityExt {
-    boolean getBeingShotFromFrogKing();
-    void setBeingShotFromFrogKing(boolean beingShotFromFrogKing);
+    boolean getBeingThrownByPrey();
+    void setBeingThrownByPrey(boolean beingThrownByPrey);
 
 }

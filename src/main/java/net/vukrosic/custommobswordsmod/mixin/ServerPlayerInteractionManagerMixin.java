@@ -1,5 +1,6 @@
 package net.vukrosic.custommobswordsmod.mixin;
 
+import net.minecraft.block.ChestBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.entity.player.PlayerEntity;
@@ -12,13 +13,16 @@ import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
 import net.vukrosic.custommobswordsmod.particle.ModParticles;
+import net.vukrosic.custommobswordsmod.util.custom.ChestsLootedByHuntersManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -33,9 +37,17 @@ public class ServerPlayerInteractionManagerMixin {
     protected ServerPlayerEntity player;
     @Inject(method = "interactBlock", at = @At("HEAD"), cancellable = true)
     private void interactBlock(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
-        boolean isInChickenDimention = ((PlayerEntityExt) player).isInChickenDimention();
-        if (isInChickenDimention) {
-            cir.setReturnValue(ActionResult.FAIL);
+        // check if hitresult is chest
+        if (SetHunterCommand.hunters.contains(player) && world.getBlockState(hitResult.getBlockPos()).getBlock() instanceof ChestBlock) {
+            BlockPos pos = hitResult.getBlockPos();
+            // check if chest is already looted
+            if (!ChestsLootedByHuntersManager.lootedChests.contains(pos)) {
+                // add chest to looted chests
+                ChestsLootedByHuntersManager.lootedChests.add(pos);
+                ChestsLootedByHuntersManager.numberOfChestsLootedByHunters++;
+                player.sendMessage(Text.of("You have looted " + ChestsLootedByHuntersManager.numberOfChestsLootedByHunters + " chests."), false);
+            }
+
         }
     }
 

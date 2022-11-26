@@ -27,11 +27,6 @@ public class ChunkenSpawnEggItem extends Item {
         ItemStack itemStack = user.getStackInHand(user.getActiveHand());
         world.playSound((PlayerEntity)null, user.getX(), user.getY(), user.getZ(), SoundEvents.ENTITY_EGG_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F));
         user.getItemCooldownManager().set(this, 20);
-        if (!world.isClient) {
-            ChunkenEntityGL chunkenEntity = new ChunkenEntityGL(ModEntities.CHUNKENGL, world);
-            chunkenEntity.refreshPositionAndAngles(context.getBlockPos().getX(), context.getBlockPos().getY() + 1, context.getBlockPos().getZ(), 0, 0);
-            world.spawnEntity(chunkenEntity);
-        }
         user.incrementStat(Stats.USED.getOrCreateStat(this));
         if (!user.getAbilities().creativeMode) {
             itemStack.decrement(1);

@@ -18,10 +18,6 @@ public class ModItems {
     public static final Item ABSORPTION_SHIELD_ITEM2 = registerItem("absorption2_shield_item",
             new AbsorptionShieldItem(new FabricItemSettings().group(ItemGroup.COMBAT).maxDamage(336)));*/
 
-    public static final Item BUTCHER_COW_SPAWN_SPAWN_EGG = registerItem("butcher_cow_spawn_spawn_egg",
-            new SpawnEggItem(ModEntities.BUTCHER_COW_SPAWN_ENTITY, 0x443626, 0xA1A1A1,
-                    new FabricItemSettings().group(ItemGroup.MISC)));
-
     public static final Item FROG_KING_SPAWN_ITEM = registerItem("frog_king_spawn_item",
             new FrogKingSpawnEggItem(new FabricItemSettings().group(ItemGroup.MISC)));
 

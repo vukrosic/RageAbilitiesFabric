@@ -10,7 +10,8 @@ import net.vukrosic.custommobswordsmod.entity.custom.summoner.SummonerEntityGL;
 import net.vukrosic.custommobswordsmod.entity.custom.summoner.SummonerEntityRemoval;
 
 public class ControlSummonerCommand {
-    public static void register(CommandDispatcher<ServerCommandSource> serverCommandSourceCommandDispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
+    public static void register(CommandDispatcher<ServerCommandSource> serverCommandSourceCommandDispatcher,
+                                CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
         serverCommandSourceCommandDispatcher.register(CommandManager.literal("summoner")
                 .then(CommandManager.literal("activate")
                         .executes((context) -> {
@@ -33,12 +34,6 @@ public class ControlSummonerCommand {
         // set controlling to true
         source.getPlayer().setInvisible(true);
 
-        SummonerEntityGL summonerEntityGL = new SummonerEntityGL(ModEntities.SUMMONER, source.getWorld());
-        summonerEntityGL.refreshPositionAndAngles(source.getPlayer().getX(), source.getPlayer().getY(), source.getPlayer().getZ(), source.getPlayer().getYaw(), source.getPlayer().getPitch());
-        summonerEntityGL.controllingPlayer = source.getPlayer();
-        ((PlayerEntityExt)source.getPlayer()).setSummonerEntityGL(summonerEntityGL);
-        source.getWorld().spawnEntity(summonerEntityGL);
-        SummonerEntityRemoval.addSummoner(summonerEntityGL);
         return 1;
     }
 
@@ -55,4 +50,5 @@ public class ControlSummonerCommand {
         SummonerEntityRemoval.clear();
         return 1;
     }
+
 }

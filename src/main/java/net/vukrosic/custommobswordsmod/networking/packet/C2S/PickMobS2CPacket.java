@@ -1,25 +1,31 @@
 package net.vukrosic.custommobswordsmod.networking.packet.C2S;
 
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
+import net.vukrosic.custommobswordsmod.entity.custom.LivingEntityExt;
+import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
 import net.vukrosic.custommobswordsmod.entity.custom.frogking.FrogKingEntity;
+import net.vukrosic.custommobswordsmod.util.custom.ChestsLootedByHuntersManager;
 
-public class FrogKingShootThongueS2CPacket {
+public class PickMobS2CPacket {
     public static void receive(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler,
                                PacketByteBuf buf, PacketSender responseSender){
 
-        float raycastDistance = 500;
+        if(ChestsLootedByHuntersManager.numberOfChestsLootedByHunters < 5){
+            return;
+        }
+
+
+        float raycastDistance = 20;
 
         Vec3d cameraPos = player.getCameraPosVec(0);
         //Vec3d cameraPos = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
@@ -39,14 +45,15 @@ public class FrogKingShootThongueS2CPacket {
                 raycastDistance
         );
 
-        FrogKingEntity frogKingEntity = (FrogKingEntity) player.getVehicle();
-        frogKingEntity.swingHand(Hand.MAIN_HAND);
 
-        if (entityHitResult != null && entityHitResult.getEntity() instanceof LivingEntity) {
-            if (player.getVehicle() != null && player.getVehicle() instanceof FrogKingEntity) {
-                frogKingEntity.EatingEntity = (LivingEntity) entityHitResult.getEntity();
-                frogKingEntity.MobPullCounter = frogKingEntity.MobPullMaxCounter;
-            }
+        if (entityHitResult != null && entityHitResult.getEntity() instanceof LivingEntity entity) {
+            // disable entity movement
+            entityHitResult.getEntity().setVelocity(0, 0, 0);
+            // set entity position 2 blocks above the player
+            entityHitResult.getEntity().setPos(player.getX(), player.getY() + 2, player.getZ());
+            // disable gravity
+            entityHitResult.getEntity().setNoGravity(true);
+            ((PlayerEntityExt) player).setPickedEntity(entity);
         }
     }
 }

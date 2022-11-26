@@ -80,23 +80,7 @@ public class CarbonPoisoningEffectManager {
     private static void randomlySpawnBlinkingWardens() {
         emptyWardensCounter = 20;
         // randomly spawn blinking wardens around the player
-        for (PlayerEntity player : players) {
-            // make a for loop to 4
-            for (int i = 0; i < 4; i++) {
-                // make a random nu mber between -10 and 10
-                int x = (int) (Math.random() * 20 - 10);
-                int z = (int) (Math.random() * 20 - 10);
-                // make a blinking warden entity
-                BlinkingWardenEntity warden = new BlinkingWardenEntity(ModEntities.BLINKING_WARDEN, player.world);
-                warden.refreshPositionAndAngles(player.getX(), player.getY(), player.getZ(), 0, 0);
-                // set the position of the warden
-                warden.setPosition(player.getX() + x, player.getY(), player.getZ() + z);
-                blinkingWardenEntities.add(warden);
-                // spawn the warden
-                warden.setSilent(true);
-                player.world.spawnEntity(warden);
-            }
-        }
+
     }
 
     private static void emptyBlinkingWardens() {

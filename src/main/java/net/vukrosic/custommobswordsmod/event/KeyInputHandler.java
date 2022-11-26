@@ -7,11 +7,8 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.*;
 //import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
-import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
-import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
 import net.vukrosic.custommobswordsmod.entity.custom.frogking.FrogKingEntity;
 import net.vukrosic.custommobswordsmod.networking.ModMessages;
 import net.vukrosic.custommobswordsmod.util.custom.InGameHudMixinExt;
@@ -28,20 +25,18 @@ public class KeyInputHandler {
     //public static final String KEY_ACTIVATE_CHUNKEN_4 = "key.custommobswordsmod.set_chunken_4";
     public static final String KEY_FROG_KING_JUMP = "key.custommobswordsmod.frog_king_jump";
 
-    public static KeyBinding shootTongue;
+    public static KeyBinding pickMob;
     public static KeyBinding showPreyHP;
     public static KeyBinding summonShulker;
-    public static KeyBinding shootMob;
+    public static KeyBinding throwMob;
     public static KeyBinding shootPlayer;
     public static KeyBinding playSummonerAnimation;
     //public static KeyBinding setChunkenTo4;
-    public static KeyBinding frogKingJump;
+    public static KeyBinding superJump;
 
     public static void registerKeyInputs() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (shootTongue.wasPressed()) {
-                if(client.player.getVehicle() != null && client.player.getVehicle() instanceof FrogKingEntity){
-
+            if (pickMob.wasPressed()) {
                     Vec3d cameraPos = client.player.getCameraPosVec(0);
                     // create byte buffer
                     PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
@@ -49,41 +44,7 @@ public class KeyInputHandler {
                     passedData.writeDouble(cameraPos.x);
                     passedData.writeDouble(cameraPos.y);
                     passedData.writeDouble(cameraPos.z);
-                    ClientPlayNetworking.send(ModMessages.FROG_KING_TONGUE, passedData);
-
-                    //ServerWorld serverWorld = client.getServer().getWorld(client.player.world.getRegistryKey());
-                    //PlayerEntity player = serverWorld.getPlayerByUuid(client.player.getUuid());
-
-/*
-                    float raycastDistance = 500;
-
-                    Vec3d cameraPos = client.player.getCameraPosVec(0);
-                    Vec3d cameraDirection = client.cameraEntity.getRotationVec(0);
-                    Vec3d vec3d3 = cameraPos.add(cameraDirection.multiply(raycastDistance));
-                    Box box = client.player
-                            .getBoundingBox()
-                            .stretch(client.player.getRotationVec(1.0F).multiply(raycastDistance))
-                            .expand(100.0D, 100.0D, 100.0D);
-
-                    EntityHitResult entityHitResult = ProjectileUtil.raycast(
-                            client.player,
-                            cameraPos,
-                            vec3d3,
-                            box,
-                            (entityx) -> !entityx.isSpectator(),
-                            raycastDistance
-                    );
-
-                    FrogKingEntity frogKingEntity = (FrogKingEntity) client.player.getVehicle();
-                    frogKingEntity.swingHand(Hand.MAIN_HAND);
-
-                    if (entityHitResult != null && entityHitResult.getEntity() instanceof LivingEntity) {
-                        if (client.player.getVehicle() != null && client.player.getVehicle() instanceof FrogKingEntity) {
-                            frogKingEntity.EatingEntity = (LivingEntity) entityHitResult.getEntity();
-                            frogKingEntity.MobPullCounter = frogKingEntity.MobPullMaxCounter;
-                        }
-                    }*/
-                }
+                    ClientPlayNetworking.send(ModMessages.PICK_MOB, passedData);
             }
 
             if(showPreyHP.wasPressed()){
@@ -96,10 +57,8 @@ public class KeyInputHandler {
                 }
             }*/
 
-            if(shootMob.wasPressed()){
-                if(client.player.getVehicle() != null && client.player.getVehicle() instanceof FrogKingEntity){
-                    ClientPlayNetworking.send(ModMessages.SHOOT_MOB, new PacketByteBuf(Unpooled.buffer()));
-                }
+            if(throwMob.wasPressed()){
+                ClientPlayNetworking.send(ModMessages.THROW_MOB, new PacketByteBuf(Unpooled.buffer()));
             }
 
             if(shootPlayer.wasPressed()){
@@ -118,13 +77,13 @@ public class KeyInputHandler {
                 //ChunkenPhaseManager.set4Phase();
             //}
 
-            if(frogKingJump.wasPressed()){
+            if(superJump.wasPressed()){
 
                 //client.player.getInventory().clear();
                 //client.player.getInventory().dropAll();
 
                 if(client.player.getVehicle() != null && client.player.getVehicle() instanceof FrogKingEntity) {
-                    ClientPlayNetworking.send(ModMessages.FROG_KING_JUMP, new PacketByteBuf(Unpooled.buffer()));
+                    ClientPlayNetworking.send(ModMessages.SUPER_JUMP, new PacketByteBuf(Unpooled.buffer()));
                 }
             }
         });
@@ -136,7 +95,7 @@ public class KeyInputHandler {
 
 
     public static void register() {
-            shootTongue = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            pickMob = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                     KEY_SHOOT_TONGUE,
                     InputUtil.Type.KEYSYM,
                     GLFW.GLFW_KEY_G,
@@ -157,7 +116,7 @@ public class KeyInputHandler {
                     KEY_CATEGORY_CUSTOMMOBS
             ));*/
 
-            shootMob = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            throwMob = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                     KEY_SHOOT_MOB,
                     InputUtil.Type.KEYSYM,
                     GLFW.GLFW_KEY_L,
@@ -185,7 +144,7 @@ public class KeyInputHandler {
                     KEY_CATEGORY_CUSTOMMOBS
             ));*/
 
-            frogKingJump = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            superJump = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                     KEY_FROG_KING_JUMP,
                     InputUtil.Type.KEYSYM,
                     GLFW.GLFW_KEY_SPACE,

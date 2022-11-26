@@ -45,38 +45,18 @@ public class FrogKingItem extends Item {
                 Vec3d vec3d2 = user.getEyePos();
                 Iterator var11 = list.iterator();
 
-                while(var11.hasNext()) {
-                    Entity entity = (Entity)var11.next();
-                    Box box = entity.getBoundingBox().expand((double)entity.getTargetingMargin());
+                while (var11.hasNext()) {
+                    Entity entity = (Entity) var11.next();
+                    Box box = entity.getBoundingBox().expand((double) entity.getTargetingMargin());
                     if (box.contains(vec3d2)) {
                         return TypedActionResult.pass(itemStack);
                     }
                 }
             }
 
-            if (hitResult.getType() == HitResult.Type.BLOCK) {
-                FrogKingEntity frogKingEntity = new FrogKingEntity(ModEntities.FROG_KING, world);
-                frogKingEntity.refreshPositionAndAngles(hitResult.getPos().x, hitResult.getPos().y, hitResult.getPos().z, 0, 0);
-                //world.spawnEntity(frogKingEntity);
-                frogKingEntity.setYaw(user.getYaw());
-                if (!world.isSpaceEmpty(frogKingEntity, frogKingEntity.getBoundingBox())) {
-                    return TypedActionResult.fail(itemStack);
-                } else {
-                    if (!world.isClient) {
-                        world.spawnEntity(frogKingEntity);
-                        world.emitGameEvent(user, GameEvent.ENTITY_PLACE, hitResult.getPos());
-                        if (!user.getAbilities().creativeMode) {
-                            itemStack.decrement(1);
-                        }
-                    }
 
-                    user.incrementStat(Stats.USED.getOrCreateStat(this));
-                    return TypedActionResult.success(itemStack, world.isClient());
-                }
-            } else {
-                return TypedActionResult.pass(itemStack);
-            }
         }
+        return null;
     }
 
 

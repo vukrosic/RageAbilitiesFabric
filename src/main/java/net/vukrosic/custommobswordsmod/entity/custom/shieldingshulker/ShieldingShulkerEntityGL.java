@@ -20,7 +20,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.entity.ModEntities;
-import net.vukrosic.custommobswordsmod.entity.custom.butcherboy.ExplosiveCowEntity;
 import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;

@@ -17,7 +17,6 @@ import net.minecraft.fluid.FluidState;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.tag.FluidTags;
-import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
@@ -26,7 +25,6 @@ import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.entity.custom.LivingEntityExt;
 import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
 import net.vukrosic.custommobswordsmod.item.ModItems;
-import net.vukrosic.custommobswordsmod.world.dimension.ModDimensions;
 import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
@@ -36,7 +34,6 @@ import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -146,12 +143,6 @@ public class FrogKingEntity extends FrogEntity implements IAnimatable {
             ServerWorld serverWorld = (ServerWorld) this.world;
             PlayerEntity shotPlayer = null;
             List<ServerPlayerEntity> players = serverWorld.getServer().getPlayerManager().getPlayerList();
-            for(ServerPlayerEntity serverPlayerEntity : players){
-                if(serverPlayerEntity.getWorld().getRegistryKey() == ModDimensions.NATEDIM_DIMENSION_KEY){
-                    shotPlayer = serverPlayerEntity;
-                    break;
-                }
-            }
 
             if(shotPlayer != null && this.getMainPassenger() != null) {
                 Vec3d lookRotation = this.getMainPassenger().getRotationVector();
@@ -190,12 +181,12 @@ public class FrogKingEntity extends FrogEntity implements IAnimatable {
                     horseEntity.setVelocity(direction.multiply(7));
                     this.world.spawnEntity(horseEntity);
                     EatenMobsByFrogKing.EatenEntityTypes.remove(0);
-                    ((LivingEntityExt)horseEntity).setBeingShotFromFrogKing(true);
+                    ((LivingEntityExt)horseEntity).setBeingThrownByPrey(true);
                     return;
                 }
                 LivingEntity entity = (LivingEntity) type.create(this.world);
                 assert entity != null;
-                ((LivingEntityExt)entity).setBeingShotFromFrogKing(true);
+                ((LivingEntityExt)entity).setBeingThrownByPrey(true);
                 entity.refreshPositionAndAngles(this.getX(), this.getY(), this.getZ(), 0, 0);
                 Vec3d entityPos = entity.getPos();
                 Vec3d lookRotation = this.getMainPassenger().getRotationVector();

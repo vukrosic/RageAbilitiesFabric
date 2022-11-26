@@ -96,5 +96,4 @@ public class ResetChunkenCommand {
         ServerPlayNetworking.send(player, ModMessages.CHUNKEN_PHASE_FINAL, new PacketByteBuf(Unpooled.buffer()));
         return 1;
     }
-
 }

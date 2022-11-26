@@ -60,22 +60,12 @@ public class SpittingChickenEntity extends ChickenEntity {
 
     private void spitAt(LivingEntity target) {
         LlamaSpitEntity llamaSpitEntity = new LlamaSpitEntity(this.world, new LlamaEntity(EntityType.LLAMA, this.world));
-
-        // get direction to target
         Vec3d direction = target.getPos().subtract(this.getPos()).normalize();
-        // set position of spit
         llamaSpitEntity.refreshPositionAndAngles(this.getX(), this.getY() + (double)this.getStandingEyeHeight() * 0.5D, this.getZ(), this.getYaw(), this.getPitch());
         llamaSpitEntity.setVelocity(direction.x, direction.y, direction.z, 1.5F, 10.0F);
-        /*
-        double d = target.getX() - this.getX();
-        double e = target.getBodyY(0.3333333333333333) - llamaSpitEntity.getY();
-        double f = target.getZ() - this.getZ();
-        double g = Math.sqrt(d * d + f * f) * 0.20000000298023224;
-        llamaSpitEntity.setVelocity(d, e + g, f, 1.5F, 10.0F);*/
         if (!this.isSilent()) {
             this.world.playSound((PlayerEntity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.ENTITY_LLAMA_SPIT, this.getSoundCategory(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
         }
-
         this.world.spawnEntity(llamaSpitEntity);
     }
 

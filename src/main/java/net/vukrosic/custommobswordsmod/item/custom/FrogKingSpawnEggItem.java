@@ -19,23 +19,7 @@ public class FrogKingSpawnEggItem extends Item {
     }
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
-        PlayerEntity user = context.getPlayer();
-        World world = context.getWorld();
-        assert user != null;
-        ItemStack itemStack = user.getStackInHand(user.getActiveHand());
-        world.playSound((PlayerEntity)null, user.getX(), user.getY(), user.getZ(),
-                SoundEvents.ENTITY_EGG_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F));
-        user.getItemCooldownManager().set(this, 20);
-        if (!world.isClient) {
-            FrogKingEntity frogKingEntity = new FrogKingEntity(ModEntities.FROG_KING, world);
-            frogKingEntity.refreshPositionAndAngles(context.getBlockPos().getX(),
-                    context.getBlockPos().getY() + 1, context.getBlockPos().getZ(), 0, 0);
-            world.spawnEntity(frogKingEntity);
-        }
-        user.incrementStat(Stats.USED.getOrCreateStat(this));
-        if (!user.getAbilities().creativeMode) {
-            itemStack.decrement(1);
-        }
+
         return super.useOnBlock(context);
     }
 }

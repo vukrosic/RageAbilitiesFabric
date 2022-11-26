@@ -11,6 +11,6 @@ public class ChunkenPhaseIncrementS2CPacket {
     public static void receive(MinecraftClient minecraftClient, ClientPlayNetworkHandler clientPlayNetworkHandler,
                                PacketByteBuf packetByteBuf, PacketSender packetSender) {
         // everything here happens only on the client
-        ChunkenPhaseManager.chunkenPhase++;
+        ChunkenPhaseManager.chunkenPhase = packetByteBuf.readInt();
     }
 }

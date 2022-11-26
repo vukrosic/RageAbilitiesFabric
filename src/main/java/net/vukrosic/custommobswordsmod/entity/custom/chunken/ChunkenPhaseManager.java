@@ -28,7 +28,7 @@ public class ChunkenPhaseManager {
 
     public static Identifier defaultEatenPlayer = new Identifier(CustomMobSwordsMod.MOD_ID, "textures/entity/chicken_robot_phase_5_gold.png");
     public static int chunkenPhase = 0;
-    public static int hitsPerPhase = 4;
+    public static int hitsPerPhase = 6;
 
     public static float scalePerPhase = 1;
 

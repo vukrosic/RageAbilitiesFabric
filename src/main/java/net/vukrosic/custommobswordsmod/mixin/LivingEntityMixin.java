@@ -1,43 +1,36 @@
 package net.vukrosic.custommobswordsmod.mixin;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.Packet;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.command.CommandOutput;
-import net.minecraft.text.Text;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Nameable;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.entity.EntityLike;
-import net.vukrosic.custommobswordsmod.CustomMobSwordsMod;
+import net.minecraft.world.explosion.Explosion;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.entity.custom.LivingEntityExt;
-import net.vukrosic.custommobswordsmod.util.IZombieEntityMixin;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Random;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity implements Nameable, EntityLike, CommandOutput, LivingEntityExt {
 
-    boolean beingShotFromFrogKing = false;
-    public boolean getBeingShotFromFrogKing() {
-        return beingShotFromFrogKing;
+    boolean beingThrownByPrey = false;
+
+
+    public boolean getBeingThrownByPrey() {
+        return beingThrownByPrey;
     }
-    public void setBeingShotFromFrogKing(boolean beingShotFromFrogKing) {
-        this.beingShotFromFrogKing = beingShotFromFrogKing;
+    public void setBeingThrownByPrey(boolean beingThrownByPrey) {
+        this.beingThrownByPrey = beingThrownByPrey;
     }
     public LivingEntityMixin(EntityType<?> type, World world) {
         super(type, world);
@@ -53,36 +46,39 @@ public abstract class LivingEntityMixin extends Entity implements Nameable, Enti
 
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     public void tick(CallbackInfo ci) {
-        if(beingShotFromFrogKing){
+        if(beingThrownByPrey){
             // get velocity
             Vec3d velocity = this.getVelocity();
             float magnitude = (float) Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
             if(magnitude < 0.3f){
-                beingShotFromFrogKing = false;
+                beingThrownByPrey = false;
+                // spawn a cloud of particles
+                for(int i = 0; i < 10; i++){
+                    this.world.addParticle(ParticleTypes.DRAGON_BREATH, this.getX(), this.getY(), this.getZ(), 0, 0, 0);
+                }
+                particles();
             }
             world.getOtherEntities(this, this.getBoundingBox().expand(2), (entity) -> {
                 return entity instanceof LivingEntity;
             }).forEach((entity) -> {
                 entity.damage(DamageSource.MAGIC, 4);
             });
+            world.createExplosion(this, this.getX(), this.getY(), this.getZ(), 3, Explosion.DestructionType.BREAK);
         }
     }
 
-
-    /*
-    @Inject(at = @At("HEAD"), method = "jump", cancellable = true)
-    public void useUndyingSword(CallbackInfo callbackInfo) {
-
-
-
-        Iterable<ItemStack> itemStack = this.getArmorItems();
-        if(this.getArmorItems().iterator().
-        for (ItemStack stack : itemStack) {
-            if(stack.getTranslationKey().equals("item.minecraft.golden_boots"))
-            {
-                System.out.println("JUMP INTO OBLIVION ");
-
-            }
+    void particles(){
+        ServerWorld serverWorld = (ServerWorld) this.world;
+        for (int i = 0; i < 50; i++) {
+            Random rand = new Random();
+            double x = this.getX() + (rand.nextDouble() - 0.5) * 2;
+            double y = this.getY() + (rand.nextDouble() - 0.5) * 2;
+            double z = this.getZ() + (rand.nextDouble() - 0.5) * 2;
+            serverWorld.spawnParticles(ParticleTypes.DRAGON_BREATH, x, y + 1, z, 1, 0, 0, 0, 1);
+            serverWorld.spawnParticles(ParticleTypes.LAVA, x, y + 3, z, 1, 0, 0, 0, 1);
         }
-    }*/
+        //thrower.kill();
+    }
+
+
 }

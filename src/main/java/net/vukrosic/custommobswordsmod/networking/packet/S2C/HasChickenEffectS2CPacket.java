@@ -9,12 +9,19 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
+import net.vukrosic.custommobswordsmod.util.ChickenEffectManager;
 
 public class HasChickenEffectS2CPacket {
     public static void receive(MinecraftClient minecraftClient, ClientPlayNetworkHandler clientPlayNetworkHandler,
                                PacketByteBuf packetByteBuf, PacketSender packetSender) {
         ClientPlayerEntity player = minecraftClient.player;
-        ((PlayerEntityExt)player).setChickenEffect(packetByteBuf.readBoolean());
+        //((PlayerEntityExt)player).setChickenEffect(packetByteBuf.readBoolean());
+        boolean hasEffect = packetByteBuf.readBoolean();
+        if(hasEffect && !ChickenEffectManager.players.contains(player.getUuid())) {
+            ChickenEffectManager.players.add(player.getUuid());
+        } else if(!hasEffect && ChickenEffectManager.players.contains(player.getUuid())) {
+            ChickenEffectManager.players.remove(player.getUuid());
+        }
     }
 
 

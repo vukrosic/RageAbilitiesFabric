@@ -6,7 +6,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
-import net.vukrosic.custommobswordsmod.entity.custom.fireenderman.CombustometerManager;
 import net.vukrosic.custommobswordsmod.entity.custom.fireenderman.HungerManagerExt;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -50,13 +49,7 @@ public abstract class HungerManagerMixin implements HungerManagerExt {
         this.hasCombusometerEffect = hasCombusometerEffect;
     }*/
 
-    @Inject(method = "update", at = @At("RETURN"))
-    public void update(PlayerEntity player, CallbackInfo ci) {
-        if (((PlayerEntityExt)player).hasCombusometerEffect()) {
-            this.prevFoodLevel = 20;
-            this.foodLevel = 20;
-        }
-    }
+
 /*
     @Inject(method = "setFoodLevel", at = @At("HEAD"))
     public void setFoodLevel(int foodLevel, CallbackInfo ci) {

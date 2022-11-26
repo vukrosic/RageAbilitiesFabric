@@ -146,18 +146,13 @@ public class CarbonPoisoningEffect extends StatusEffect {
         if (bl3) {
             //player.world.emitGameEvent(GameEvent.TELEPORT, vec3d, GameEvent.Emitter.of(this));
             if (!player.isSilent()) {
-                player.playSound(SoundEvents.ENTITY_WARDEN_HEARTBEAT , 10.0f, 1.0f);
+                //player.playSound(SoundEvents.ENTITY_WARDEN_HEARTBEAT , 10.0f, 1.0f);
             }
         }
         return bl3;
     }
 
     public boolean spawnWardenAt(double x, double y, double z, boolean particleEffects, PlayerEntity player) {
-        BlinkingWardenEntity warden = new BlinkingWardenEntity(ModEntities.BLINKING_WARDEN, player.world);
-        warden.refreshPositionAndAngles(x, y+1, z, 0, 0);
-        warden.setPosition(x, y+1, z);
-        player.world.spawnEntity(warden);
-        blinkingWardenEntities.add(warden);
         return true;
     }
 
@@ -183,8 +178,8 @@ public class CarbonPoisoningEffect extends StatusEffect {
             if (bl3) {
                 player.world.emitGameEvent(GameEvent.TELEPORT, vec3d, GameEvent.Emitter.of(player));
                 if (!player.isSilent()) {
-                    player.world.playSound((PlayerEntity)null, player.prevX, player.prevY, player.prevZ, SoundEvents.ENTITY_ENDERMAN_TELEPORT, player.getSoundCategory(), 1.0F, 1.0F);
-                    player.playSound(SoundEvents.ENTITY_ENDERMAN_TELEPORT, 1.0F, 1.0F);
+                    //player.world.playSound((PlayerEntity)null, player.prevX, player.prevY, player.prevZ, SoundEvents.ENTITY_ENDERMAN_TELEPORT, player.getSoundCategory(), 1.0F, 1.0F);
+                    //player.playSound(SoundEvents.ENTITY_ENDERMAN_TELEPORT, 1.0F, 1.0F);
                 }
             }
 

@@ -21,10 +21,6 @@ public class EnderZoglinEffect extends StatusEffect {
         if(entity instanceof PiglinEntity){
             BlockPos pos = new BlockPos(entity.getX(), entity.getY(), entity.getZ());
 
-            EnderZoglinEntity enderZoglin = new EnderZoglinEntity(ModEntities.ENDER_ZOGLIN, entity.world);
-            enderZoglin.refreshPositionAndAngles(pos, 0, 0);
-            enderZoglin.setPosition(pos.getX(), pos.getY(), pos.getZ());
-            entity.world.spawnEntity(enderZoglin);
 
             entity.discard();
         }
