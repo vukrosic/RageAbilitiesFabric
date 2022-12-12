@@ -13,8 +13,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.random.Random;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.item.ModItems;
-import net.vukrosic.custommobswordsmod.util.FireInfectedPlayers;
-import net.vukrosic.custommobswordsmod.util.GettingEatenByChunkenManager;
 import net.vukrosic.custommobswordsmod.util.custom.InGameHudMixinExt;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -41,7 +39,7 @@ public abstract class InGameHudMixin extends DrawableHelper implements InGameHud
     }
     @Override
     public void setPreyHealth(float preyHealth) {
-        this.preyHealth = preyHealth;
+        InGameHudMixin.preyHealth = preyHealth;
     }
 
     @Shadow
@@ -87,25 +85,6 @@ public abstract class InGameHudMixin extends DrawableHelper implements InGameHud
             renderHealthBar(new MatrixStack(), this.client.player, 15, 15, 500, 0, 20, incrementedHealth, (int)preyHealth, 0, false);
 
 
-        }
-    }
-
-    @Inject(method = "renderHotbarItem", at = @At("HEAD"))
-    private void renderHotbar(int x, int y, float tickDelta, PlayerEntity player, ItemStack stack, int seed, CallbackInfo ci) {
-
-
-        if(GettingEatenByChunkenManager.player != null && GettingEatenByChunkenManager.player.equals(player)) {
-            Screen screen = MinecraftClient.getInstance().currentScreen;
-            MatrixStack matrixStack = new MatrixStack();
-            this.fill(matrixStack, 0, 0, this.client.getWindow().getScaledWidth(), this.client.getWindow().getScaledHeight(), 0x000000);
-            this.client.currentScreen.drawTexture(new MatrixStack(), 0, 0, 0, 0, screen.width, screen.height);
-        }
-
-
-        // if player is burning
-        if (FireInfectedPlayers.isPlayerInList(player)) {
-            this.itemRenderer.renderInGuiWithOverrides(player, ModItems.FIRE_ITEM.getDefaultStack(), x, y, seed);
-            //this.itemRenderer.renderGuiItemOverlay(this.client.textRenderer, ModItems.FIRE_ITEM.getDefaultStack(), x, y);
         }
     }
 }

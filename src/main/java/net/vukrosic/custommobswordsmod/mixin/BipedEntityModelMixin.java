@@ -10,6 +10,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
 import net.vukrosic.custommobswordsmod.util.ThrowingAnimationManager;
+import net.vukrosic.custommobswordsmod.util.abilities.PlayerAbilities;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,20 +28,13 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity> extends Anim
     boolean throwing = false;
     float holdingAnimationAngle = -2.8f;
 
-    @Inject(method = "positionLeftArm", at = @At("HEAD"), cancellable = true)
-    private void positionLeftArm(T entity, CallbackInfo ci) {
-        if (entity instanceof PlayerEntity player) {
-            if(((PlayerEntityExt)player).getPickedEntity() != null){
-                ci.cancel();
-            }
-        }
-    }
+
 
     @Inject(method = "positionRightArm", at = @At("HEAD"), cancellable = true)
     private void positionRightArm(T entity, CallbackInfo ci) {
         // make arm point upwards
         if (entity instanceof PlayerEntity player) {
-            if (((PlayerEntityExt) player).getPickedEntity() != null) {
+            if (PlayerAbilities.pickedEntities != null) {
                 this.rightArm.pitch = holdingAnimationAngle;
                 this.leftArm.pitch = throwAnimationAngle;
                 if (ThrowingAnimationManager.throwingPlayer != null &&

@@ -14,7 +14,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
-import net.vukrosic.custommobswordsmod.entity.custom.fireenderman.CombustometerManager;
 
 import java.util.Random;
 

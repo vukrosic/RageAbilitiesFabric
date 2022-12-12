@@ -28,7 +28,7 @@ public class RestoreDeathCommand {
         serverCommandSourceCommandDispatcher.register(CommandManager.literal("restore")
                 .then(CommandManager.literal("death")
                         .executes((context) -> {
-                            return restore((ServerCommandSource)context.getSource(), EntityArgumentType.getEntities(context, "targets"));
+                            return restore(context.getSource(), EntityArgumentType.getEntities(context, "targets"));
                         })));
 
     }
@@ -56,7 +56,7 @@ public class RestoreDeathCommand {
         speedruner.experienceLevel = xp;
         speedruner.setHealth(health);
         // restore time
-        speedruner.getServer().getWorld(speedruner.world.getRegistryKey()).setTimeOfDay((long)time);
+        speedruner.getServer().getWorld(speedruner.world.getRegistryKey()).setTimeOfDay(time);
         return 1;
     }
 }

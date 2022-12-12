@@ -13,4 +13,6 @@ public class PlayerAbilities {
         AbilityTier++;
     }
 
+    public static void tick() {
+    }
 }

@@ -15,7 +15,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
-import net.vukrosic.custommobswordsmod.entity.custom.frogking.FrogKingEntity;
 import net.vukrosic.custommobswordsmod.util.abilities.PlayerAbilities;
 
 import java.util.Objects;

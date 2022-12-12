@@ -2,6 +2,7 @@ package net.vukrosic.custommobswordsmod.util;
 
 
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
+import net.vukrosic.custommobswordsmod.util.abilities.PlayerAbilities;
 
 public class TickCounter {
     //MinecraftClient client = MinecraftClient.getInstance().world.getTime()
@@ -20,10 +21,7 @@ public class TickCounter {
 
 
     public static void calledEveryTick() {
-        FireInfectedPlayers.tick();
-        CarbonPoisoningEffectManager.tick();
-
-
+        PlayerAbilities.tick();
 /*
         // Stopwatch
         if(!Stopwatch.timePaused){

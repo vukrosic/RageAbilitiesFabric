@@ -31,25 +31,23 @@ public class SetHunterCommand {
                 .then(CommandManager.literal("setpray")
                         .then(CommandManager.argument("targets", EntityArgumentType.entities())
                                 .executes((context) -> {
-                                    return setPray((ServerCommandSource)context.getSource(), EntityArgumentType.getEntities(context, "targets"));
+                                    return setPray(context.getSource(), EntityArgumentType.getEntities(context, "targets"));
                                 })))
                 .then(CommandManager.literal("sethunter")
                         .then(CommandManager.argument("targets", EntityArgumentType.entities())
                                 .executes((context) -> {
-                                    return setHunter((ServerCommandSource)context.getSource(), EntityArgumentType.getEntities(context, "targets"));
+                                    return setHunter(context.getSource(), EntityArgumentType.getEntities(context, "targets"));
                                 })))
                 .then(CommandManager.literal("reset")
                         .executes((context) -> {
-                                    return reset((ServerCommandSource)context.getSource(), EntityArgumentType.getEntities(context, "targets"));
+                                    return reset(context.getSource(), EntityArgumentType.getEntities(context, "targets"));
                                 })));
 
     }
     private static int setPray(ServerCommandSource source, Collection<? extends Entity> targets) {
         for (Entity entity : targets) {
             if (entity instanceof PlayerEntity) {
-                if(hunters.contains(entity)){
-                    hunters.remove(entity);
-                }
+                hunters.remove(entity);
                 pray = (PlayerEntity) entity;
                 prayUuid = entity.getUuid();
                 PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
@@ -67,7 +65,7 @@ public class SetHunterCommand {
                     prayUuid = null;
                 }
                 hunters.add((PlayerEntity) entity);
-                huntersUUIDs.add(((PlayerEntity) entity).getUuid());
+                huntersUUIDs.add(entity.getUuid());
             }
         }
         return 1;

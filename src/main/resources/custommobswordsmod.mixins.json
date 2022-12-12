@@ -5,14 +5,9 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "LivingEntityMixin",
-    "IronGolemEntityMixin",
     "ItemEntityMixin",
-    "EntityMixin",
     "WorldMixin",
     "ServerPlayerInteractionManagerMixin",
-    "HungerManagerMixin",
-    "FrogBrainMixin",
-    "ItemDispenserBehaviourMixin",
     "ServerWorldMixin",
     "PlayerEntityMixin",
     "BedBlockMixin",
@@ -23,12 +18,8 @@
   "client": [
     "ExampleMixin",
     "InGameHudMixin",
-    "ClientPlayerInteractionManagerMixin",
     "ClientWorldMixin",
-    "HandledScreenMixin",
     "CompassAnglePredicateProviderMixin",
-    "SoundManagerMixin",
-    "SoundSystemMixin",
     "ItemEntityRendererMixin",
     "AbstractClientPlayerEntityMixin"
   ],

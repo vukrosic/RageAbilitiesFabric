@@ -14,15 +14,11 @@ public class ModRegistries {
         registerAttributes();
         CommandRegistrationCallback.EVENT.register(SetHunterCommand::register);
         CommandRegistrationCallback.EVENT.register(RestoreDeathCommand::register);
-        CommandRegistrationCallback.EVENT.register(ResetChunkenCommand::register);
-        CommandRegistrationCallback.EVENT.register(ControlSummonerCommand::register);
         CommandRegistrationCallback.EVENT.register(AbilitiesCommand::register);
-        CommandRegistrationCallback.EVENT.register(CombustometerCommand::register);
     }
 
     private static void registerAttributes(){
         //FabricDefaultAttributeRegistry.register(ModEntities.ENDERZOGLIN, EnderZoglinEntity.setAttributes());
-        FabricDefaultAttributeRegistry.register(ModEntities.FIRE_ZOMBIE, FireZombieEntity.setAttributes());
     }
 
 

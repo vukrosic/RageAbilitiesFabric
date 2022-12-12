@@ -10,7 +10,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import net.vukrosic.custommobswordsmod.entity.custom.LivingEntityExt;
 import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
-import net.vukrosic.custommobswordsmod.entity.custom.frogking.FrogKingEntity;
 import net.vukrosic.custommobswordsmod.util.ThrowingAnimationManager;
 import net.vukrosic.custommobswordsmod.util.abilities.PlayerAbilities;
 
@@ -19,14 +18,12 @@ import java.util.Random;
 public class ThrowMobC2SPacket {
     public static void receive(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler,
                                PacketByteBuf buf, PacketSender responseSender){
-        if(((PlayerEntityExt)player).getPickedEntity() != null) {
+        if(PlayerAbilities.pickedEntities != null) {
             float throwForce = 1;
             Vec3d cameraPos = player.getCameraPosVec(0);
             //Vec3d cameraPos = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
             Vec3d cameraDirection = player.getRotationVec(0);
             Vec3d vec3d3 = cameraDirection.subtract(cameraPos).multiply(throwForce);
-            ((PlayerEntityExt) player).getPickedEntity().setNoGravity(false);
-
             Vec3d entityPos = player.getPos();
             Vec3d lookRotation = player.getRotationVector();
             Vec3d cameraPos1 = player.getCameraPosVec(0);

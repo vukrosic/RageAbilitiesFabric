@@ -21,30 +21,30 @@ public class AbilitiesCommand {
             .then(CommandManager.literal("chests")
                 .then(CommandManager.literal("resetCounter")
                     .executes((context) -> {
-                        return resetChestCounter((ServerCommandSource) context.getSource()/*, EntityArgumentType.getEntities(context, "targets")*/);
+                        return resetChestCounter(context.getSource()/*, EntityArgumentType.getEntities(context, "targets")*/);
                     })))
             .then(CommandManager.literal("spawnLava") // boolean argument
                     .then(CommandManager.literal("true")
                             .executes((context) -> {
-                                return spawnLavaTrue((ServerCommandSource) context.getSource()/*, EntityArgumentType.getEntities(context, "targets")*/);
+                                return spawnLavaTrue(context.getSource()/*, EntityArgumentType.getEntities(context, "targets")*/);
                             }))
                     .then(CommandManager.literal("false")
                             .executes((context) -> {
-                                return spawnLavaFalse((ServerCommandSource) context.getSource()/*, EntityArgumentType.getEntities(context, "targets")*/);
+                                return spawnLavaFalse(context.getSource()/*, EntityArgumentType.getEntities(context, "targets")*/);
                             })))
             .then(CommandManager.literal("bedAbilityEnabled") // boolean argument
                     .then(CommandManager.literal("true")
                             .executes((context) -> {
-                                return bedAbilityEnabledTrue((ServerCommandSource) context.getSource()/*, EntityArgumentType.getEntities(context, "targets")*/);
+                                return bedAbilityEnabledTrue(context.getSource()/*, EntityArgumentType.getEntities(context, "targets")*/);
                             }))
                     .then(CommandManager.literal("false")
                             .executes((context) -> {
-                                return bedAbilityEnabledFalse((ServerCommandSource) context.getSource()/*, EntityArgumentType.getEntities(context, "targets")*/);
+                                return bedAbilityEnabledFalse(context.getSource()/*, EntityArgumentType.getEntities(context, "targets")*/);
                             })))
             .then(CommandManager.literal("hitBossBar")
                     .then(CommandManager.literal("disable")
                             .executes((context) -> {
-                                return hitBossBarDisable((ServerCommandSource) context.getSource()/*, EntityArgumentType.getEntities(context, "targets")*/);
+                                return hitBossBarDisable(context.getSource()/*, EntityArgumentType.getEntities(context, "targets")*/);
                             })))
         );
 

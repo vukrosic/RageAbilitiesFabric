@@ -14,7 +14,6 @@ import net.minecraft.util.math.Vec3d;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.entity.custom.LivingEntityExt;
 import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
-import net.vukrosic.custommobswordsmod.entity.custom.frogking.FrogKingEntity;
 import net.vukrosic.custommobswordsmod.util.abilities.PlayerAbilities;
 import net.vukrosic.custommobswordsmod.util.custom.ChestsLootedByHuntersManager;
 import org.checkerframework.common.returnsreceiver.qual.This;

@@ -16,7 +16,6 @@ import net.minecraft.util.math.*;
 //import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.CustomMobSwordsMod;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
-import net.vukrosic.custommobswordsmod.entity.custom.frogking.FrogKingEntity;
 import net.vukrosic.custommobswordsmod.networking.ModMessages;
 import net.vukrosic.custommobswordsmod.util.custom.ChestsLootedByHuntersManager;
 import net.vukrosic.custommobswordsmod.util.custom.IExampleAnimatedPlayer;
@@ -58,6 +57,7 @@ public class KeyInputHandler {
                 PlayerEntity player = client.player;
 
                 if(ChestsLootedByHuntersManager.numberOfChestsLootedByHunters < 5 &&
+                    SetHunterCommand.pray.getUuid() != null &&
                     SetHunterCommand.pray.getUuid() != player.getUuid()){
                     return;
                 }
@@ -90,9 +90,7 @@ public class KeyInputHandler {
             }
 
             if(shootPlayer.wasPressed()){
-                if(client.player.getVehicle() != null && client.player.getVehicle() instanceof FrogKingEntity){
-                    ClientPlayNetworking.send(ModMessages.SHOOT_PLAYER, new PacketByteBuf(Unpooled.buffer()));
-                }
+
             }
 
             if(activateFireAbility.wasPressed()){

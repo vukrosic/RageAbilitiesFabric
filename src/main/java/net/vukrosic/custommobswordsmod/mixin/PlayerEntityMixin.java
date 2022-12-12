@@ -109,21 +109,10 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
         this.isBedAbilityActive = isBedAbilityActive;
     }
 
-    @Override
-    public LivingEntity getPickedEntity() {
-        return pickedEntity;
-    }
-
-    // make getter and setter
-    @Override
-    public void setPickedEntity(LivingEntity pickedEntity) {
-        this.pickedEntity = pickedEntity;
-    }
-
     @Inject(method = "tick", at = @At("HEAD"))
     public void tick(CallbackInfo ci) {
         if (!this.world.isClient) {
-            if(SetHunterCommand.pray == (PlayerEntity) (Object) this || PlayerAbilities.pickedEntities != null) {
+            if(SetHunterCommand.pray == (Object) this || PlayerAbilities.pickedEntities != null) {
                 // set position of all picked entities to this
                 for(LivingEntity entity : PlayerAbilities.pickedEntities){
                     double randX = this.getX() + new Random().nextFloat() * 2 - 1;
@@ -134,7 +123,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
             }
             if (rageBarProgress > 0 && Math.random() < 0.3) {
                 rageBar.setPercent(rageBarProgress);
-                if (this.rageBar.getPlayers().size() == 0 && SetHunterCommand.pray == (PlayerEntity) (Object) this) {
+                if (this.rageBar.getPlayers().size() == 0 && SetHunterCommand.pray == (Object) this) {
                     this.rageBar.addPlayer((ServerPlayerEntity) (Object) this);
                     if (!AbilitiesCommand.serverBossBars.contains(rageBar)) {
                         AbilitiesCommand.serverBossBars.add(rageBar);
@@ -229,7 +218,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
         if (!this.world.isClient) {
 
             // if damage source is fire
-            if (SetHunterCommand.pray != null && SetHunterCommand.pray == (PlayerEntity) (Object) this && damageSource_1.isFire()) {
+            if (SetHunterCommand.pray != null && SetHunterCommand.pray == (Object) this && damageSource_1.isFire()) {
                 ServerCommandSource commandSource = this.getCommandSource();
                 PlayerEntity player = (PlayerEntity) (Object) this;
                 CommandManager commandManager = Objects.requireNonNull(player.getServer()).getCommandManager();
