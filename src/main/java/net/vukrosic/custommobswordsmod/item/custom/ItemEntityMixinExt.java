@@ -8,4 +8,6 @@ public interface ItemEntityMixinExt {
     void setBurnTimer(int burntimer);
 
     void setThrownBy(PlayerEntity player);
+    void setBouncing(boolean bouncing);
+    boolean getBouncing();
 }

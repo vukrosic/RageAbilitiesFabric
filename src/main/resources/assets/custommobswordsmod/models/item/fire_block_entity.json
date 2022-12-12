@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "custommobswordsmod:item/fire_item"
+    "layer0": "minecraft:block/lava_flow"
   }
 }

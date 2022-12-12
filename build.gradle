@@ -59,6 +59,7 @@ dependencies {
 	}
 	include("com.github.Chocohead:Fabric-ASM:v${project.fabric_asm_version}")
 	// player animation library
+	// include modImplementation("dev.kosmx.player-anim:player-animation-lib-fabric-0.4.0")
 	include modImplementation("dev.kosmx.player-anim:player-animation-lib-fabric:${project.player_anim}")
 }
 

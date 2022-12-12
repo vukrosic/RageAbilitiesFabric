@@ -23,6 +23,11 @@ public class ModEntities {
             FabricEntityTypeBuilder.create(SpawnGroup.MONSTER, FireZombieEntity::new)
                     .dimensions(EntityDimensions.fixed(0.6F, 1.95F))
                     .build());
+    public static final EntityType<LavaBlockEntity> LAVA_BLOCK_ENTITY = Registry.register(
+            Registry.ENTITY_TYPE, new Identifier(CustomMobSwordsMod.MOD_ID, "lava_block_entity"),
+            FabricEntityTypeBuilder.create(SpawnGroup.MONSTER, LavaBlockEntity::new)
+                    .dimensions(EntityDimensions.fixed(0.6F, 0.6F))
+                    .build());
 
 
     private static Item registerEntityItem(EntityType<?> entityType, Item item) {

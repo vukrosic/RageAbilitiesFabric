@@ -1,14 +1,21 @@
 package net.vukrosic.custommobswordsmod.mixin;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.item.custom.ItemEntityMixinExt;
 import net.vukrosic.custommobswordsmod.util.FireInfectedPlayers;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,57 +30,68 @@ import java.util.Random;
 
 @Mixin(ItemEntity.class)
 public abstract class ItemEntityMixin extends Entity implements ItemEntityMixinExt {
+    @Shadow private int pickupDelay;
+
     public ItemEntityMixin(EntityType<?> type, World world) {
         super(type, world);
     }
 
-
-    public int burntimer = 1;
-    public PlayerEntity thrownBy;
-
+    int discardTimer = 55;
+    public boolean bouncing = true;
     @Override
-    public void setBurnTimer(int burntimer) {
-        this.burntimer = burntimer;
+    public void setBouncing(boolean bouncing) {
+        this.bouncing = bouncing;
+    }
+    @Override
+    public boolean getBouncing() {
+        return bouncing;
     }
 
-    @Override
-    public void setThrownBy(PlayerEntity player){
-        this.thrownBy = player;
-    }
-
-
-/*
-    @Overwrite
-    public boolean damage(DamageSource source, float amount) {
-        if(source.isFire()){
-            this.burntimer = 100;
+    // inject into getBodyYaw
+    @Inject(method = "getBodyYaw", at = @At("HEAD"), cancellable = true)
+    public void getBodyYaw(CallbackInfoReturnable<Float> cir){
+        // if the item is a fire sword, set the yaw to 0
+        if(bouncing){
+            // get command manager
+            ServerCommandSource commandSource = world.getServer().getCommandSource();
+            CommandManager commandManager = world.getServer().getCommandManager();
+            if (commandManager != null) {
+                commandManager.executeWithPrefix( commandSource, "/scale set 4");
+            }
+            cir.setReturnValue(0f);
         }
-        return false;
-    }*/
-
-
+    }
+    @Inject (method = "getRotation", at = @At("HEAD"), cancellable = true)
+    public void getRotation(CallbackInfoReturnable<Float> cir){
+        if(bouncing){
+            /*ServerCommandSource commandSource = world.getServer().getCommandSource();
+            CommandManager commandManager = world.getServer().getCommandManager();
+            if (commandManager != null) {
+                commandManager.executeWithPrefix( commandSource, "/scale set 4");
+            }*/
+            cir.setReturnValue(0f);
+        }
+    }
+    // inject into tick
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
-    private void burn(CallbackInfo info) {
-
-        if (!this.world.isClient()) {
-            if (FireInfectedPlayers.isPlayerInList(thrownBy)) {
-
-                ServerWorld serverWorld = (ServerWorld) this.world;
-
-                if (FireInfectedPlayers.fireTicks.get(FireInfectedPlayers.players.indexOf(thrownBy)) <= 5) {
-                    double x = this.getX();
-                    double y = this.getY();
-                    double z = this.getZ();
-                    serverWorld.spawnParticles(ParticleTypes.WITCH, x, y + 1, z, 50, 0, 0, 0, 1);
-                    //this.kill();
-                    if(serverWorld.getPlayers().size() > 0){
-                        serverWorld.spawnParticles(serverWorld.getPlayers().get(0), ParticleTypes.WITCH, true, x, y + 1, z, 50, 0, 0, 0, 1);
-                    }
-                    this.kill();
-                }
-            }
+    public void tick(CallbackInfo ci){
+        // if the item is a fire sword, set the yaw to 0
+        if(bouncing){
+            // get velocity
+            Vec3d velocity = this.getVelocity();
+            if(velocity.y < 0.1){
+                discard();
             }
         }
-
     }
+
+    // prevent the item from being picked up with infinite pickup delay
+    @Inject(method = "setPickupDelay", at = @At("HEAD"), cancellable = true)
+    public void setPickupDelay(int pickupDelay, CallbackInfo ci){
+        if(bouncing){
+            this.pickupDelay = 32767;
+            ci.cancel();
+        }
+    }
+}
 

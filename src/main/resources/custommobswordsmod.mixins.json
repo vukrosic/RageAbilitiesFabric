@@ -15,7 +15,10 @@
     "ItemDispenserBehaviourMixin",
     "ServerWorldMixin",
     "PlayerEntityMixin",
-    "BedBlockMixin"
+    "BedBlockMixin",
+    "PlayerEntityModelMixin",
+    "BipedEntityModelMixin",
+    "EnderPearlEntityMixin"
   ],
   "client": [
     "ExampleMixin",
@@ -25,7 +28,9 @@
     "HandledScreenMixin",
     "CompassAnglePredicateProviderMixin",
     "SoundManagerMixin",
-    "SoundSystemMixin"
+    "SoundSystemMixin",
+    "ItemEntityRendererMixin",
+    "AbstractClientPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

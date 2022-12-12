@@ -26,6 +26,22 @@ public interface PlayerEntityExt {
     LivingEntity getPickedEntity();
     void setPickedEntity(LivingEntity pickedEntity);
 
+    boolean serPlayerOnFireOnHitEnabled = false;
+    // getter and setter
+    void setSerPlayerOnFireOnHitEnabled(boolean serPlayerOnFireOnHitEnabled);
+    int setPlayerOnFireOnHitCooldown = 200;
+    // getter
+    int getPlayerOnFireOnHitCooldown();
+
+    boolean isSpawningLavaAround = false;
+    // setter
+    void setSpawningLavaAround(boolean isSpawningLavaAround);
+
+    boolean superJumpActive = false;
+    // setter and getter
+    void setSuperJumpActive(boolean superJumpActive);
+    boolean getSuperJumpActive();
+
     void setNeedsToGetVelocity(boolean needsToGetVelocity);
     void setVelocityFrogKingSummon(Vec3d velocityFrogKingSummon);
     void setSummoningFrogKingEntity(FrogKingEntity summoningFrogKingEntity);

@@ -23,6 +23,7 @@ public class TickCounter {
         FireInfectedPlayers.tick();
         CarbonPoisoningEffectManager.tick();
 
+
 /*
         // Stopwatch
         if(!Stopwatch.timePaused){

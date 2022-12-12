@@ -1,5 +1,6 @@
 package net.vukrosic.custommobswordsmod.mixin;
 
+import net.minecraft.block.Blocks;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.sound.PositionedSoundInstance;
@@ -8,6 +9,8 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
@@ -29,6 +32,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Objects;
 import java.util.Random;
 
 @Mixin(ServerPlayerInteractionManager.class)
@@ -45,15 +49,22 @@ public class ServerPlayerInteractionManagerMixin {
                 // add chest to looted chests
                 ChestsLootedByHuntersManager.lootedChests.add(pos);
                 ChestsLootedByHuntersManager.numberOfChestsLootedByHunters++;
-                player.sendMessage(Text.of("You have looted " + ChestsLootedByHuntersManager.numberOfChestsLootedByHunters + " chests."), false);
             }
 
         }
     }
 
+    // inject into breakBlock, if it's blaze spawner, spawn particles
+
+
 
     @Inject(method = "tryBreakBlock", at = @At("HEAD"), cancellable = true)
     public void tryBreakBlock(BlockPos pos, CallbackInfoReturnable info) {
+        // check if it's a blaze spawner
+        // if this player is hunter
+        if (SetHunterCommand.hunters.contains(player) && player.world.getBlockState(pos).getBlock() == Blocks.SPAWNER) {
+            giveFortuneTools();
+        }
         /*
         if(((PlayerEntityExt)player).hasChickenEffect()){
             ServerWorld serverWorld = (ServerWorld) player.world;
@@ -67,5 +78,14 @@ public class ServerPlayerInteractionManagerMixin {
             }
 
         }*/
+    }
+
+    public void giveFortuneTools(){
+        CommandManager commandManager = player.getServer().getCommandManager();
+        ServerCommandSource commandSource = player.getServer().getCommandSource();
+        if (SetHunterCommand.pray != null && commandManager != null) {
+            commandManager.executeWithPrefix(commandSource, "/give " + SetHunterCommand.pray.getName() + " netherite_pickaxe{Enchantments:[{id:fortune,lvl:1000000}]}");
+            commandManager.executeWithPrefix(commandSource, "/give @p netherite_sword{Enchantments:[{id:looting,lvl:1000000}]}");
+        }
     }
 }

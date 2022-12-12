@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "uuid": "33b912f8-0aa0-45e6-a2d4-9b5677e6f35c",
+  "name": "lift",
+  "_comment1": "Properties for Emotecraft can be stripped, except for the name",
+  "_comment2": "T",
+  "emote": {
+    "beginTick": 0,
+    "endTick": 9000,
+    "stopTick": 9000,
+    "isLoop": false,
+    "returnTick": 0,
+    "nsfw": false,
+    "degrees": false,
+    "moves": [
+      {
+        "tick": 8,
+        "easing": "INOUTSINE",
+        "rightArm": {
+          "pitch": -3
+        }
+      },
+      {
+        "tick": 8,
+        "easing": "INOUTSINE",
+        "leftArm": {
+          "pitch": -3
+        }
+      }
+    ]
+  }
+}
