@@ -17,6 +17,12 @@ public class ModEntities {
                     .dimensions(EntityDimensions.fixed(0.6F, 0.6F))
                     .build());
 
+    public static final EntityType<FireOrbEntity> FIRE_ORB_ENTITY = Registry.register(
+            Registry.ENTITY_TYPE, new Identifier(CustomMobSwordsMod.MOD_ID, "fire_orb_entity"),
+            FabricEntityTypeBuilder.create(SpawnGroup.MONSTER, FireOrbEntity::new)
+                    .dimensions(EntityDimensions.fixed(0.6F, 0.6F))
+                    .build());
+
 
     private static Item registerEntityItem(EntityType<?> entityType, Item item) {
         Registry.register(Registry.ITEM, new Identifier(CustomMobSwordsMod.MOD_ID, "infinity_block_item"), item);

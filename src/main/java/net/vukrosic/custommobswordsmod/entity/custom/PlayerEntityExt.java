@@ -1,6 +1,5 @@
 package net.vukrosic.custommobswordsmod.entity.custom;
 
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.Vec3d;
 
 public interface PlayerEntityExt {
@@ -15,22 +14,14 @@ public interface PlayerEntityExt {
     // bedAbility
     boolean isBedAbilityActive = false;
     // bed ability getter and setter
-    void setBedAbilityActive(boolean isBedAbilityActive);
-    boolean getBedAbilityActive();
-    boolean serPlayerOnFireOnHitEnabled = false;
-    // getter and setter
-    void setSerPlayerOnFireOnHitEnabled(boolean serPlayerOnFireOnHitEnabled);
-    int setPlayerOnFireOnHitCooldown = 200;
+    void setSuperjumping(boolean isBedAbilityActive);
     // getter
-    int getPlayerOnFireOnHitCooldown();
-
-    boolean isSpawningLavaAround = false;
-    // setter
-    void setSpawningLavaAround(boolean isSpawningLavaAround);
 
     boolean superJumpActive = false;
     // setter and getter
-    void setSuperJumpActive(boolean superJumpActive);
+    void setActiveAbilityActive(boolean superJumpActive);
+    boolean getActiveAbilityActive();
+    boolean getIncreasedSize();
     boolean getSuperJumpActive();
 
     void setNeedsToGetVelocity(boolean needsToGetVelocity);
@@ -60,4 +51,6 @@ public interface PlayerEntityExt {
     void setFireInfected(boolean fireInfected);
 
     boolean getFireInfected();
+
+
 }

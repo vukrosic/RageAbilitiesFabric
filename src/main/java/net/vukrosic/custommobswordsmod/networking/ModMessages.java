@@ -8,12 +8,8 @@ import net.vukrosic.custommobswordsmod.networking.packet.C2S.*;
 import net.vukrosic.custommobswordsmod.networking.packet.S2C.*;
 
 public class ModMessages {
-    public static final Identifier CONVERT_INVENTORY = new Identifier(CustomMobSwordsMod.MOD_ID, "convert_inventory");
-    public static final Identifier DAMAGE_TOOLS = new Identifier(CustomMobSwordsMod.MOD_ID, "damage_tools");
-    public static final Identifier SUPER_JUMP = new Identifier(CustomMobSwordsMod.MOD_ID, "frog_king_jump");
+    public static final Identifier USE_ACTIVE_ABILITY = new Identifier(CustomMobSwordsMod.MOD_ID, "frog_king_jump");
     public static final Identifier THROW_MOB = new Identifier(CustomMobSwordsMod.MOD_ID, "shoot_mob");
-    public static final Identifier SHOOT_PLAYER = new Identifier(CustomMobSwordsMod.MOD_ID, "shoot_player");
-    public static final Identifier ACTIVATE_FIRE_ABILITY = new Identifier(CustomMobSwordsMod.MOD_ID, "play_summoner_animation");
     public static final Identifier PICK_MOB = new Identifier(CustomMobSwordsMod.MOD_ID, "frog_king_tongue");
     public static final Identifier SET_OVERWORLD_PREY_POS = new Identifier(CustomMobSwordsMod.MOD_ID, "set_overworld_prey_pos");
     public static final Identifier SET_NETHER_PREY_POS = new Identifier(CustomMobSwordsMod.MOD_ID, "set_nether_prey_pos");
@@ -22,13 +18,16 @@ public class ModMessages {
     public static final Identifier EVERY_TICK = new Identifier(CustomMobSwordsMod.MOD_ID, "every_tick");
     public static final Identifier PREY_HEALTH_HUD = new Identifier(CustomMobSwordsMod.MOD_ID, "prey_health_hud");
     public static final Identifier SPAWN_LIGHTNING = new Identifier(CustomMobSwordsMod.MOD_ID, "tier1runfastandfiretrail");
+    public static final Identifier LEVEL_UP_ABILITY = new Identifier(CustomMobSwordsMod.MOD_ID, "level_up_ability");
+    public static final Identifier ENABLE_FLYING_ABILITY = new Identifier(CustomMobSwordsMod.MOD_ID, "enable_flying_ability");
 
     public static void registerC2SPacket(){
-        ServerPlayNetworking.registerGlobalReceiver(SUPER_JUMP, SuperJumpC2SPacket::receive);
+        ServerPlayNetworking.registerGlobalReceiver(USE_ACTIVE_ABILITY, UseActiveAbilityC2SPacket::receive);
         ServerPlayNetworking.registerGlobalReceiver(THROW_MOB, ThrowMobC2SPacket::receive);
-        ServerPlayNetworking.registerGlobalReceiver(ACTIVATE_FIRE_ABILITY, ActivateFireAbilityC2SPacket::receive);
         ServerPlayNetworking.registerGlobalReceiver(PICK_MOB, PickMobS2CPacket::receive);
         ServerPlayNetworking.registerGlobalReceiver(SPAWN_LIGHTNING, SpawnLightningS2CPacket::receive);
+        ServerPlayNetworking.registerGlobalReceiver(LEVEL_UP_ABILITY, LevelUpAbilityS2CPacket::receive);
+        ServerPlayNetworking.registerGlobalReceiver(ENABLE_FLYING_ABILITY, EnableFlyingAbilityS2CPacket::receive);
     }
 
     public static void registerS2CPacket(){

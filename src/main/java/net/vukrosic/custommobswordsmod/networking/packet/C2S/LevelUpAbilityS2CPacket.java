@@ -5,15 +5,15 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Hand;
-import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
+import net.vukrosic.custommobswordsmod.util.abilities.PlayerAbilities;
 
-public class ActivateFireAbilityC2SPacket {
+public class LevelUpAbilityS2CPacket {
     public static void receive(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler,
                                PacketByteBuf buf, PacketSender responseSender){
-        if(((PlayerEntityExt)player).getPlayerOnFireOnHitCooldown() == 0) {
-            ((PlayerEntityExt) player).setSerPlayerOnFireOnHitEnabled(true);
+        PlayerAbilities.levelUp();
+        if(PlayerAbilities.AbilityTier == 4){
+            // enable flying for the player
+            player.getAbilities().allowFlying = true;
         }
-
     }
 }

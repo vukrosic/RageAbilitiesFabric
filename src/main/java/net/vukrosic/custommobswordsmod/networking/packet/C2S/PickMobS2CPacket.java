@@ -2,37 +2,35 @@ package net.vukrosic.custommobswordsmod.networking.packet.C2S;
 
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.CreeperEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Hand;
+import net.minecraft.text.Text;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
-import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.entity.custom.LivingEntityExt;
-import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
 import net.vukrosic.custommobswordsmod.util.abilities.PlayerAbilities;
-import net.vukrosic.custommobswordsmod.util.custom.ChestsLootedByHuntersManager;
-import org.checkerframework.common.returnsreceiver.qual.This;
 
 public class PickMobS2CPacket {
     public static void receive(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler,
                                PacketByteBuf buf, PacketSender responseSender){
-
+        player.sendMessage(Text.of("PlayerAbilities.AbilityTier = " + PlayerAbilities.AbilityTier), false);
         if(PlayerAbilities.AbilityTier == 1){
-            pickupEntityWithRaycast(player);
+            pickupAllEntitiesInXBlockRadius(player, 10);
         }
         else if(PlayerAbilities.AbilityTier == 2){
-            pickupAllEntitiesIn10BlockRadius(player, 10);
+            pickupAllEntitiesInXBlockRadius(player, 10);
         }
         else if(PlayerAbilities.AbilityTier == 3){
-            pickupAllEntitiesIn10BlockRadius(player, 50);
+            pickupAllEntitiesInXBlockRadius(player, 50);
         }
         else if(PlayerAbilities.AbilityTier == 4){
-            pickupAllEntitiesIn10BlockRadius(player, 100);
+            pickupAllEntitiesInXBlockRadius(player, 100);
         }
 
 
@@ -58,24 +56,36 @@ public class PickMobS2CPacket {
                 raycastDistance
         );
         if (entityHitResult != null && entityHitResult.getEntity() instanceof LivingEntity entity) {
+            player.sendMessage(Text.of("You picked up 1 entity: " + entity.getName()), false);
+
             // disable entity movement
             entityHitResult.getEntity().setVelocity(0, 0, 0);
             // set entity position 2 blocks above the player
-            entityHitResult.getEntity().setPos(player.getX(), player.getY() + 2, player.getZ());
+            //entityHitResult.getEntity().setPos(player.getX(), player.getY() + 2, player.getZ());
             // disable gravity
             entityHitResult.getEntity().setNoGravity(true);
             //((PlayerEntityExt) player).setPickedEntity(entity);
             PlayerAbilities.pickedEntities.add(entity);
+
         }
     }
 
-    static void pickupAllEntitiesIn10BlockRadius(ServerPlayerEntity player, int radius) {
+    static void pickupAllEntitiesInXBlockRadius(ServerPlayerEntity player, int radius) {
         for (LivingEntity entity : player.world.getEntitiesByClass(LivingEntity.class, new Box(player.getBlockPos()).expand(radius), entity -> true)) {
+            if (entity instanceof PlayerEntity || entity instanceof CreeperEntity) {
+                continue;
+            }
             entity.setVelocity(0, 0, 0);
-            entity.setPos(player.getX(), player.getY() + 2, player.getZ());
+            entity.setPos(player.getX(), player.getY() + 3, player.getZ());
             ((LivingEntityExt) entity).setBeingPickedByPlayer(true);
             entity.setNoGravity(true);
             //((PlayerEntityExt) player).setPickedEntity(entity);
+            player.sendMessage(Text.of("You picked up multiple entities: " + entity.getName()), false);
+            PlayerAbilities.pickedEntities.add(entity);
+            ((LivingEntityExt) entity).setPicker(player);
+            if(PlayerAbilities.AbilityTier == 1){
+                break;
+            }
         }
     }
 }

@@ -34,7 +34,7 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity> extends Anim
     private void positionRightArm(T entity, CallbackInfo ci) {
         // make arm point upwards
         if (entity instanceof PlayerEntity player) {
-            if (PlayerAbilities.pickedEntities != null) {
+            if (PlayerAbilities.pickedEntities.size() > 0) {
                 this.rightArm.pitch = holdingAnimationAngle;
                 this.leftArm.pitch = throwAnimationAngle;
                 if (ThrowingAnimationManager.throwingPlayer != null &&

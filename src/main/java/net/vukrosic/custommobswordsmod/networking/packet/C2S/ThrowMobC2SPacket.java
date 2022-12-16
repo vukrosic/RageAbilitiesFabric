@@ -32,7 +32,8 @@ public class ThrowMobC2SPacket {
             // throw all mobs in PlayerAbilities.pickedEntities
             for (LivingEntity entity : PlayerAbilities.pickedEntities) {
                 entity.setNoGravity(false);
-                entity.setVelocity(direction.multiply(7 + new Random().nextFloat()));
+                entity.setVelocity(direction.multiply(7));
+                ((LivingEntityExt) entity).setPicker(null);
                 ((LivingEntityExt) entity).setBeingThrownByPrey(true);
             }
             PlayerAbilities.pickedEntities.clear();

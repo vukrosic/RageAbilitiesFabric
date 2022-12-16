@@ -10,23 +10,35 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.world.explosion.Explosion;
+import net.vukrosic.custommobswordsmod.util.abilities.PlayerAbilities;
+
+import java.util.ArrayList;
 
 public class SpawnLightningS2CPacket {
     public static void receive(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler,
                                PacketByteBuf buf, PacketSender responseSender) {
-        // get the closest mob to the player
-        // spawn lightning on that mob
-        LivingEntity closestMob = player.world.getClosestEntity(LivingEntity.class, TargetPredicate.DEFAULT, player, player.getX(), player.getY(), player.getZ(), player.getBoundingBox().expand(10, 10, 10));
-        // strike the clasestMob with a lightning bolt
-        if (closestMob != null) {
+        player.sendMessage(Text.of("Lightning strike!"), false);
+        if(PlayerAbilities.AbilityTier != 4){
+            return;
+        }
+
+        ArrayList<LivingEntity> mobs = new ArrayList<LivingEntity>();
+        player.world.getEntitiesByClass(LivingEntity.class, player.getBoundingBox().expand(60), (entity) -> {
+            mobs.add(entity);
+            return true;
+        });
+
+        for(LivingEntity mob : mobs){
+            // get 5 closest mobs
             LightningEntity lightning = new LightningEntity(EntityType.LIGHTNING_BOLT, player.world);
-            lightning.refreshPositionAfterTeleport(closestMob.getX(), closestMob.getY(), closestMob.getZ());
+            lightning.refreshPositionAfterTeleport(mob.getX(), mob.getY(), mob.getZ());
             player.world.spawnEntity(lightning);
             // create explosion
-            player.world.createExplosion(player, closestMob.getX(), closestMob.getY(), closestMob.getZ(), 5, true, Explosion.DestructionType.DESTROY);
+            player.world.createExplosion(player, mob.getX(), mob.getY(), mob.getZ(), 5, true, Explosion.DestructionType.DESTROY);
             // create explosion particles
-            player.world.addParticle(ParticleTypes.EXPLOSION_EMITTER, closestMob.getX(), closestMob.getY(), closestMob.getZ(), 0.0D, 0.0D, 0.0D);
+            player.world.addParticle(ParticleTypes.EXPLOSION_EMITTER, mob.getX(), mob.getY(), mob.getZ(), 0.0D, 0.0D, 0.0D);
         }
     }
 }

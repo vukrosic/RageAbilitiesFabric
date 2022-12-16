@@ -7,108 +7,85 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.*;
 //import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.CustomMobSwordsMod;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.networking.ModMessages;
 import net.vukrosic.custommobswordsmod.util.custom.ChestsLootedByHuntersManager;
 import net.vukrosic.custommobswordsmod.util.custom.IExampleAnimatedPlayer;
-import net.vukrosic.custommobswordsmod.util.custom.InGameHudMixinExt;
 import org.lwjgl.glfw.GLFW;
 
 public class KeyInputHandler {
-    public static final String KEY_CATEGORY_CUSTOMMOBS = "key.category.custommobswordsmod.custommobs";
-    public static final String KEY_SHOOT_TONGUE = "key.custommobswordsmod.shoot_tongue";
-    public static final String KEY_SHOW_PREY_HP = "key.custommobswordsmod.show_prey_hp";
-    //public static final String KEY_SUMMON_SHULKER = "key.custommobswordsmod.summon_shulker";
-    public static final String KEY_SHOOT_MOB = "key.custommobswordsmod.shoot_mob";
-    public static final String KEY_SHOOT_PLAYER = "key.custommobswordsmod.shoot_player";
-    public static final String KEY_ACTIVATE_FIRE_ABILITY = "key.custommobswordsmod.spawn_summoner_mob";
-    //public static final String KEY_ACTIVATE_CHUNKEN_4 = "key.custommobswordsmod.set_chunken_4";
-    public static final String KEY_FROG_KING_JUMP = "key.custommobswordsmod.frog_king_jump";
+    public static final String ABILITIES_CATEGORY = "key.category.custommobswordsmod.custommobs";
+    public static final String KEY_PICK_MOB = "key.custommobswordsmod.pick_mob";
+    public static final String KEY_THROW_MOB = "key.custommobswordsmod.shoot_mob";
+    public static final String KEY_USE_ACTIVE_ABILITY = "key.custommobswordsmod.use_active_ability";
+    public static final String KEY_LEVEL_UP_ABILITY = "key.custommobswordsmod.level_up_ability";
+    public static final String KEY_SPAWN_LIGHTNING = "key.custommobswordsmod.spawn_lightning";
+    private static final String KEY_ENABLE_FLYING = "key.custommobswordsmod.enable_flying";
 
     public static KeyBinding pickMob;
-    public static KeyBinding showPreyHP;
-    public static KeyBinding summonShulker;
     public static KeyBinding throwMob;
-    public static KeyBinding shootPlayer;
-    public static KeyBinding activateFireAbility;
-    //public static KeyBinding setChunkenTo4;
-    public static KeyBinding superJump;
+    public static KeyBinding useActiveAbility;
+    public static KeyBinding levelUpAbility;
+    public static KeyBinding lightningAbility;
+    public static KeyBinding enableFlyingAbility;
 
     public static void registerKeyInputs() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (pickMob.wasPressed()) {
-                Vec3d cameraPos = client.player.getCameraPosVec(0);
-                // create byte buffer
-                PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
-                // write data to buffer
-                passedData.writeDouble(cameraPos.x);
-                passedData.writeDouble(cameraPos.y);
-                passedData.writeDouble(cameraPos.z);
-                ClientPlayNetworking.send(ModMessages.PICK_MOB, passedData);
-                // get player who pressed the key
-                PlayerEntity player = client.player;
-
-                if(ChestsLootedByHuntersManager.numberOfChestsLootedByHunters < 5 &&
-                    SetHunterCommand.pray.getUuid() != null &&
-                    SetHunterCommand.pray.getUuid() != player.getUuid()){
-                    return;
-                }
-                //If we want to play the animation, get the animation container
-                var animationContainer = ((IExampleAnimatedPlayer)player).custommobswordsmod_getModAnimation();
-                //Use setAnimation to set the current animation. It will be played automatically.
-                KeyframeAnimation anim = PlayerAnimationRegistry.getAnimation(new Identifier(CustomMobSwordsMod.MOD_ID, "lift"));
-                animationContainer.setAnimation(new KeyframeAnimationPlayer(anim));
+                ClientPlayNetworking.send(ModMessages.PICK_MOB, new PacketByteBuf(Unpooled.buffer()));
+                playPickMobAnimation(client);
             }
-
-
-
-            if(showPreyHP.wasPressed()){
-                ((InGameHudMixinExt)client.inGameHud).setShowPreyHealthbar(!((InGameHudMixinExt)client.inGameHud).getShowPreyHealthbar());
-            }
-            /*
-            if (summonShulker.wasPressed()) {
-                if(SetHunterCommand.pray != null){
-                    ((PlayerEntityExt)SetHunterCommand.pray).SummonShieldingShulker();
-                }
-            }*/
-
             if(throwMob.wasPressed()){
                 ClientPlayNetworking.send(ModMessages.THROW_MOB, new PacketByteBuf(Unpooled.buffer()));
-                //If we want to play the animation, get the animation container
-                var animationContainer = ((IExampleAnimatedPlayer)client.player).custommobswordsmod_getModAnimation();
-                //Use setAnimation to set the current animation. It will be played automatically.
-                KeyframeAnimation anim = PlayerAnimationRegistry.getAnimation(new Identifier(CustomMobSwordsMod.MOD_ID, "throw"));
-                animationContainer.setAnimation(new KeyframeAnimationPlayer(anim));
+                playThrowMobAnimation(client);
             }
-
-            if(shootPlayer.wasPressed()){
-
+            if(useActiveAbility.wasPressed()){
+                ClientPlayNetworking.send(ModMessages.USE_ACTIVE_ABILITY, new PacketByteBuf(Unpooled.buffer()));
             }
-
-            if(activateFireAbility.wasPressed()){
-                //ServerWorld serverWorld = client.getServer().getWorld(client.player.world.getRegistryKey());
-                //PlayerEntity player = serverWorld.getPlayerByUuid(client.player.getUuid());
-                ClientPlayNetworking.send(ModMessages.ACTIVATE_FIRE_ABILITY, new PacketByteBuf(Unpooled.buffer()));
+            if(levelUpAbility.wasPressed()){
+                ClientPlayNetworking.send(ModMessages.LEVEL_UP_ABILITY, new PacketByteBuf(Unpooled.buffer()));
             }
-
-            //if(setChunkenTo4.wasPressed()){
-                //ChunkenPhaseManager.set4Phase();
-            //}
-
-            if(superJump.wasPressed()){
-                    ClientPlayNetworking.send(ModMessages.SUPER_JUMP, new PacketByteBuf(Unpooled.buffer()));
+            if(lightningAbility.wasPressed()){
+                ClientPlayNetworking.send(ModMessages.SPAWN_LIGHTNING, new PacketByteBuf(Unpooled.buffer()));
+            }
+            if(enableFlyingAbility.wasPressed()){
+                ClientPlayNetworking.send(ModMessages.ENABLE_FLYING_ABILITY, new PacketByteBuf(Unpooled.buffer()));
             }
         });
     }
 
+
+
+    static void playPickMobAnimation(MinecraftClient client){
+        // get player who pressed the key
+        PlayerEntity player = client.player;
+        if(ChestsLootedByHuntersManager.numberOfChestsLootedByHunters < 5 &&
+            SetHunterCommand.pray != null &&
+            SetHunterCommand.pray.getUuid() != player.getUuid()){
+            return;
+        }
+        //If we want to play the animation, get the animation container
+        var animationContainer = ((IExampleAnimatedPlayer)player).custommobswordsmod_getModAnimation();
+        //Use setAnimation to set the current animation. It will be played automatically.
+        KeyframeAnimation anim = PlayerAnimationRegistry.getAnimation(new Identifier(CustomMobSwordsMod.MOD_ID, "lift"));
+        animationContainer.setAnimation(new KeyframeAnimationPlayer(anim));
+    }
+
+    static void playThrowMobAnimation(MinecraftClient client){
+        //If we want to play the animation, get the animation container
+        var animationContainer = ((IExampleAnimatedPlayer)client.player).custommobswordsmod_getModAnimation();
+        //Use setAnimation to set the current animation. It will be played automatically.
+        KeyframeAnimation anim = PlayerAnimationRegistry.getAnimation(new Identifier(CustomMobSwordsMod.MOD_ID, "throw"));
+        animationContainer.setAnimation(new KeyframeAnimationPlayer(anim));
+    }
 
 
 
@@ -116,61 +93,52 @@ public class KeyInputHandler {
 
     public static void register() {
             pickMob = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                    KEY_SHOOT_TONGUE,
+                    KEY_PICK_MOB,
                     InputUtil.Type.KEYSYM,
                     GLFW.GLFW_KEY_G,
-                    KEY_CATEGORY_CUSTOMMOBS
+                    ABILITIES_CATEGORY
             ));
 
-            showPreyHP = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                    KEY_SHOW_PREY_HP,
-                    InputUtil.Type.KEYSYM,
-                    GLFW.GLFW_KEY_O,
-                    KEY_CATEGORY_CUSTOMMOBS
-            ));
-/*
-            summonShulker = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                    KEY_SUMMON_SHULKER,
-                    InputUtil.Type.KEYSYM,
-                    GLFW.GLFW_KEY_P,
-                    KEY_CATEGORY_CUSTOMMOBS
-            ));*/
 
             throwMob = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                    KEY_SHOOT_MOB,
+                    KEY_THROW_MOB,
                     InputUtil.Type.KEYSYM,
                     GLFW.GLFW_KEY_L,
-                    KEY_CATEGORY_CUSTOMMOBS
+                    ABILITIES_CATEGORY
             ));
 
-            shootPlayer = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                    KEY_SHOOT_PLAYER,
-                    InputUtil.Type.KEYSYM,
-                    GLFW.GLFW_KEY_P,
-                    KEY_CATEGORY_CUSTOMMOBS
-            ));
-
-            activateFireAbility = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                    KEY_ACTIVATE_FIRE_ABILITY,
-                    InputUtil.Type.KEYSYM,
-                    GLFW.GLFW_KEY_K,
-                    KEY_CATEGORY_CUSTOMMOBS
-            ));
-/*
-            setChunkenTo4 = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                    KEY_ACTIVATE_CHUNKEN_4,
-                    InputUtil.Type.KEYSYM,
-                    GLFW.GLFW_KEY_N,
-                    KEY_CATEGORY_CUSTOMMOBS
-            ));*/
-
-            superJump = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                    KEY_FROG_KING_JUMP,
+            useActiveAbility = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                    KEY_USE_ACTIVE_ABILITY,
                     InputUtil.Type.KEYSYM,
                     GLFW.GLFW_KEY_V,
-                    KEY_CATEGORY_CUSTOMMOBS
+                    ABILITIES_CATEGORY
             ));
 
-            registerKeyInputs();
+
+            levelUpAbility = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                    KEY_LEVEL_UP_ABILITY,
+                    InputUtil.Type.KEYSYM,
+                    GLFW.GLFW_KEY_M,
+                    ABILITIES_CATEGORY
+            ));
+
+             lightningAbility = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                    KEY_SPAWN_LIGHTNING,
+                    InputUtil.Type.KEYSYM,
+                    GLFW.GLFW_KEY_B,
+                    ABILITIES_CATEGORY
+            ));
+             enableFlyingAbility = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                KEY_ENABLE_FLYING,
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_N,
+                ABILITIES_CATEGORY
+        ));
+                registerKeyInputs();
         }
+
+
+
+
+
 }

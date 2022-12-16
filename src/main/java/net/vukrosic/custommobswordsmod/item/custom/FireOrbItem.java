@@ -7,13 +7,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import net.vukrosic.custommobswordsmod.entity.ModEntities;
+import net.vukrosic.custommobswordsmod.entity.custom.FireOrbEntity;
 import net.vukrosic.custommobswordsmod.entity.custom.FirePearlEntity;
 
-public class FirePearlItem extends Item {
-    public FirePearlItem(Settings settings) {
+public class FireOrbItem extends Item {
+    public FireOrbItem(Settings settings) {
         super(settings);
     }
 
@@ -22,9 +25,9 @@ public class FirePearlItem extends Item {
         //world.playSound(null, user.getX(), user.getY(), user.getZ(), SoundEvents.ENTITY_ENDER_PEARL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F));
         user.getItemCooldownManager().set(this, 20);
         if (!world.isClient) {
-            FirePearlEntity enderPearlEntity = new FirePearlEntity(world, user);
+            FireOrbEntity enderPearlEntity = new FireOrbEntity(ModEntities.FIRE_ORB_ENTITY, world);
+            user.sendMessage(Text.of("FireOrbEntity: " + enderPearlEntity), false);
             enderPearlEntity.setItem(itemStack);
-            enderPearlEntity.setVelocity(user, user.getPitch(), user.getYaw(), 0.0F, 1.5F, 1.0F);
             enderPearlEntity.thrower = user;
             world.spawnEntity(enderPearlEntity);
         }

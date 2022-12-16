@@ -8,6 +8,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.entity.boss.ServerBossBar;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -20,6 +22,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.vukrosic.custommobswordsmod.command.AbilitiesCommand;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
+import net.vukrosic.custommobswordsmod.entity.ModEntities;
+import net.vukrosic.custommobswordsmod.entity.custom.FireOrbEntity;
 import net.vukrosic.custommobswordsmod.entity.custom.FirePearlEntity;
 import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
 import net.vukrosic.custommobswordsmod.item.ModItems;
@@ -32,31 +36,25 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEntityExt {
 
-    public int tier = 0;
-    // make server boss bar that gets filled as the player is attacked by other players
+
     float rageBarProgress = 0f;
-    boolean serPlayerOnFireOnHit = false;
-    boolean serPlayerOnFireOnHitEnabled = false;
-    int setPlayerOnFireOnHitCooldown = 200;
-    // lava ability
-    boolean isImmuneToLavaDamage = true;
+
     boolean isSpawningLavaAround = false;
     // bed ability
-    boolean isBedAbilityActive = false;
+    boolean isSuperjumping = false;
     // overrride getter and setter
     // super jump
-    boolean superJumpActive = false;
+    boolean activeAbilityActive = false;
     int fireSizeIncreaseCoundown = -10;
-    int jumpTimer = 4;
-    LivingEntity pickedEntity = null;
+    int jumpTimer = 0;
+    boolean hasFireOrb = false;
+    boolean increasedSize = false;
+
     ServerBossBar rageBar = new ServerBossBar(Text.of("RageBar"), BossBar.Color.RED, BossBar.Style.PROGRESS);
     @Shadow
     private PlayerInventory inventory;
@@ -67,60 +65,81 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
 
     @Shadow
     public abstract void sendMessage(Text message, boolean overlay);
-
     @Shadow
     public abstract void jump();
-
-    public void setSerPlayerOnFireOnHitEnabled(boolean serPlayerOnFireOnHitEnabled) {
-        this.serPlayerOnFireOnHitEnabled = serPlayerOnFireOnHitEnabled;
-    }
-
-    //getter
     @Override
-    public int getPlayerOnFireOnHitCooldown() {
-        return setPlayerOnFireOnHitCooldown;
+    public boolean getActiveAbilityActive() {
+        return activeAbilityActive;
+    }
+    @Override
+    public boolean getIncreasedSize() {
+        return increasedSize;
+    }
+    @Override
+    public void setActiveAbilityActive(boolean activeAbilityActive) {
+        this.activeAbilityActive = activeAbilityActive;
+        if(!activeAbilityActive) {
+            // clear all effects
+            this.clearStatusEffects();
+            ServerCommandSource commandSource = this.getCommandSource();
+            PlayerEntity player = (PlayerEntity) (Object) this;
+            CommandManager commandManager = Objects.requireNonNull(player.getServer()).getCommandManager();
+            if (commandManager != null) {
+                commandManager.executeWithPrefix(commandSource, "/scale set 1");
+                increasedSize = false;
+            }
+            return;
+        }
+        int duration = 20 * 50000;
+        if (PlayerAbilities.AbilityTier == 1) {
+            this.clearStatusEffects();
+            this.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, duration, 6));
+            this.addStatusEffect(new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, duration, 6));
+        } else if (PlayerAbilities.AbilityTier == 2) {
+            this.clearStatusEffects();
+            this.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, duration, 6));
+            this.addStatusEffect(new StatusEffectInstance(StatusEffects.JUMP_BOOST, duration, 6));
+            this.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, duration, 6));
+            this.addStatusEffect(new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, duration, 6));
+            ServerCommandSource commandSource = this.getCommandSource();
+            PlayerEntity player = (PlayerEntity) (Object) this;
+            CommandManager commandManager = Objects.requireNonNull(player.getServer()).getCommandManager();
+            if (commandManager != null) {
+                commandManager.executeWithPrefix(commandSource, "/scale set 2");
+                increasedSize = true;
+            }
+        } else if (PlayerAbilities.AbilityTier == 3) {
+            this.clearStatusEffects();
+            this.clearStatusEffects();
+            this.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, duration, 6));
+            this.addStatusEffect(new StatusEffectInstance(StatusEffects.JUMP_BOOST, duration, 6));
+            this.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, duration, 6));
+            this.addStatusEffect(new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, duration, 6));
+            ServerCommandSource commandSource = this.getCommandSource();
+            PlayerEntity player = (PlayerEntity) (Object) this;
+            CommandManager commandManager = Objects.requireNonNull(player.getServer()).getCommandManager();
+            if (commandManager != null) {
+                commandManager.executeWithPrefix(commandSource, "/scale set 2");
+            }
+            /*
+            setVelocity(0, 60, 0);
+            this.setVelocity(0, 60, 0);
+            this.addVelocity(0, 60, 0);
+            addVelocity(0, 60, 0);*/
+            setSuperjumping(true);
+        }
     }
 
-    public void setSpawningLavaAround(boolean isSpawningLavaAround) {
-        this.isSpawningLavaAround = isSpawningLavaAround;
-    }
+
 
     @Override
-    public boolean getSuperJumpActive() {
-        return superJumpActive;
-    }
-
-    @Override
-    public void setSuperJumpActive(boolean superJumpActive) {
-        // set velocty of this to 100
-        //this.setVelocity(this.getVelocity().x, 60, this.getVelocity().z);
-        //this.addVelocity(0, 60, 0);
-        //jump();
-        this.superJumpActive = superJumpActive;
-    }
-
-    @Override
-    public boolean getBedAbilityActive() {
-        return isBedAbilityActive;
-    }
-
-    @Override
-    public void setBedAbilityActive(boolean isBedAbilityActive) {
-        this.isBedAbilityActive = isBedAbilityActive;
+    public void setSuperjumping(boolean isBedAbilityActive) {
+        this.isSuperjumping = isBedAbilityActive;
     }
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void tick(CallbackInfo ci) {
         if (!this.world.isClient) {
-            if(SetHunterCommand.pray == (Object) this || PlayerAbilities.pickedEntities != null) {
-                // set position of all picked entities to this
-                for(LivingEntity entity : PlayerAbilities.pickedEntities){
-                    double randX = this.getX() + new Random().nextFloat() * 2 - 1;
-                    double randY = this.getY() + new Random().nextFloat() * 2 - 1;
-                    double randZ = this.getZ()+ new Random().nextFloat() * 2 - 1;
-                    entity.teleport(randX, randY, randZ);
-                }
-            }
             if (rageBarProgress > 0 && Math.random() < 0.3) {
                 rageBar.setPercent(rageBarProgress);
                 if (this.rageBar.getPlayers().size() == 0 && SetHunterCommand.pray == (Object) this) {
@@ -131,48 +150,63 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
                 }
             }
 
-            if (serPlayerOnFireOnHitEnabled && setPlayerOnFireOnHitCooldown > 0) {
-                setPlayerOnFireOnHitCooldown--;
-            }
-            if (setPlayerOnFireOnHitCooldown <= 0) {
-                serPlayerOnFireOnHit = true;
-                // log the ability is activated only in this players chat
-                ((ServerPlayerEntity) (Object) this).sendMessage(Text.of("You can now set players on fire on hit!"), false);
-            }
 
 
             fireSizeIncreaseCoundown();
 
-
-            if (isBedAbilityActive && jumpTimer > -10) {
+/*
+            if (isSuperjumping && jumpTimer > -5) {
                 jumpTimer--;
-            }
-            if (isBedAbilityActive && jumpTimer <= -10 && this.isOnGround()) {
-                jumpTimer = 4;
+            }*/
+
+            if (PlayerAbilities.AbilityTier == 3 && jumpTimer <= -14 && this.isOnGround()) {
+                jumpTimer = 0;
+                setSuperjumping(false);
                 bounceUpBlocksAround();
+                smashPlayersIntoTheGround();
             }
             if (this.isOnGround()) {
-                jumpTimer = 4;
+                jumpTimer = 0;
+            }
+            else {
+                jumpTimer--;
             }
 
-            // shoot lava
-            if (isBedAbilityActive && superJumpActive) {
-                shootLava();
-                superJumpActive = false;
-            }
-            if (PlayerAbilities.AbilityTier == 1 && superJumpActive) {
-                setFireBehind();
-            }
-            else if (PlayerAbilities.AbilityTier == 2) {
 
+            if (PlayerAbilities.AbilityTier == 1 || PlayerAbilities.AbilityTier == 2) {
+                if(activeAbilityActive) {
+                    setFireBehind();
+                }
             }
             else if (PlayerAbilities.AbilityTier == 3) {
 
+                if(!hasFireOrb) {
+                    sendMessage(Text.of("Spawning fire orb!"), false);
+                    FireOrbEntity fireOrbEntity = new FireOrbEntity(ModEntities.FIRE_ORB_ENTITY, this.world);
+                    fireOrbEntity.setOwner((PlayerEntity) (Object) this);
+                    fireOrbEntity.thrower = (PlayerEntity) (Object) this;
+                }
             }
             else if (PlayerAbilities.AbilityTier == 4) {
-                turnFloorIntoNetherrack();
+                if(isOnGround())
+                    turnFloorIntoNetherrack();
             }
 
+        }
+    }
+
+    private void smashPlayersIntoTheGround() {
+        // if SetHunterCommand.hunters is not empty
+        if(SetHunterCommand.hunters != null) {
+            for (PlayerEntity hunter : SetHunterCommand.hunters) {
+                if (hunter != (Object) this) {
+                    // if hunter is in range of 5 blocks
+                    if (hunter.distanceTo( this) < 10) {
+                        // teleport hunter to the ground
+                        hunter.teleport(hunter.getX(), this.getY() - 2, hunter.getZ());
+                    }
+                }
+            }
         }
     }
 
@@ -181,18 +215,36 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
             Vec3d direction = this.getRotationVector();
             Vec3d position = this.getPos();
             BlockPos blockBehind = new BlockPos(position.x - direction.x, position.y - direction.y, position.z - direction.z);
-            this.world.setBlockState(blockBehind, Blocks.FIRE.getDefaultState());
+            // get a few other blocks behind
+            BlockPos blockBehind2 = new BlockPos(position.x - direction.x * 2, position.y - direction.y * 2, position.z - direction.z * 2);
+            BlockPos blockBehind3 = new BlockPos(position.x - direction.x * 3, position.y - direction.y * 3, position.z - direction.z * 3);
+            // also behind to the side
+            BlockPos blockBehind4 = new BlockPos(position.x - direction.x * 2 + direction.z, position.y - direction.y * 2, position.z - direction.z * 2 - direction.x);
+            BlockPos blockBehind5 = new BlockPos(position.x - direction.x * 2 - direction.z, position.y - direction.y * 2, position.z - direction.z * 2 + direction.x);
+            for(BlockPos blockPos : new BlockPos[]{blockBehind, blockBehind2, blockBehind3, blockBehind4, blockBehind5}) {
+                if (this.world.getBlockState(blockPos).isAir()) {
+                    this.world.setBlockState(blockPos, Blocks.FIRE.getDefaultState());
+                }
+            }
         }
     }
 
     private void turnFloorIntoNetherrack() {
+
         // get all ground blocks around
         for (int x = -5; x < 5; x++) {
             for (int z = -5; z < 5; z++) {
                 // turn it to netherrack
                 BlockState[] blockStates = new BlockState[]{Blocks.NETHERRACK.getDefaultState(), Blocks.NETHER_BRICKS.getDefaultState(),
                         Blocks.NETHER_WART_BLOCK.getDefaultState(), Blocks.NETHER_BRICK_WALL.getDefaultState()};
-                world.setBlockState(new BlockPos(this.getX() + x, this.getY() - 1, this.getZ() + z), blockStates[new Random().nextInt(blockStates.length)]);
+                // if the block is not already in the list
+                if (!Arrays.asList(blockStates).contains(this.world.getBlockState(new BlockPos(this.getX() + x, this.getY() - 1, this.getZ() + z)))) {
+                    // set it to a random block from the list
+                    // if block is not air
+                    if (!this.world.getBlockState(new BlockPos(this.getX() + x, this.getY() - 1, this.getZ() + z)).isAir()){
+                        this.world.setBlockState(new BlockPos(this.getX() + x, this.getY() - 1, this.getZ() + z), blockStates[(int) (Math.random() * blockStates.length)]);
+                    }
+                }
             }
         }
     }
@@ -238,16 +290,19 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
                 rageBarProgress += 0.1f;
                 if (rageBarProgress >= 1f) {
                     rageBarProgress = 1f;
-                    serPlayerOnFireOnHitEnabled = true;
                 }
             }
             // if bar is full
-            if (damageSource_1.getAttacker() instanceof PlayerEntity && rageBarProgress >= 1 && serPlayerOnFireOnHit) {
-                damageSource_1.getAttacker().setOnFireFor(5);
-                setPlayerOnFireOnHitCooldown = 200;
-            }
+            if (damageSource_1.getAttacker() instanceof PlayerEntity)
+                if(PlayerAbilities.AbilityTier == 1)
+                    damageSource_1.getAttacker().setOnFireFor(3);
+                else if(PlayerAbilities.AbilityTier == 2)
+                    shootLava();
+
         }
     }
+
+
 
     @Inject(method = "onDeath", at = @At("HEAD"))
     public void onDeath(DamageSource damageSource_1, CallbackInfo ci) {
@@ -257,13 +312,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
         this.rageBar.removePlayer((ServerPlayerEntity) (Object) this);
     }
 
-    @Override
-    public double getJumpBoostVelocityModifier() {
-        if (isBedAbilityActive) {
-            return 2.55;
-        } else
-            return super.getJumpBoostVelocityModifier();
-    }
+
 
     void shootLava() {
         // for 1 to 10
@@ -285,9 +334,6 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
         for (int x = -3; x < 4; x++) {
             for (int y = -3; y < 4; y++) {
                 for (int z = -3; z < 4; z++) {
-                    // skip if it's under the player
-                    if (y < 0 && x == 0 && z == 0)
-                        continue;
                     blockPosList.add(this.getBlockPos().add(x, y, z));
                 }
             }

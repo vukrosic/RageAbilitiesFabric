@@ -2,14 +2,19 @@ package net.vukrosic.custommobswordsmod.mixin;
 
 import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.passive.HorseEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.Nameable;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.entity.EntityLike;
+import net.minecraft.world.explosion.Explosion;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.entity.custom.LivingEntityExt;
+import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
 import net.vukrosic.custommobswordsmod.particle.ModParticles;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -24,6 +29,15 @@ public abstract class LivingEntityMixin extends Entity implements Nameable, Enti
 
     boolean beingThrownByPrey = false;
     boolean beingPickedByPlayer = false;
+    PlayerEntity picker = null;
+    @Override
+    public void getPicker(){
+        picker = null;
+    }
+    @Override
+    public void setPicker(PlayerEntity picker){
+        this.picker = picker;
+    }
 
     public void setBeingPickedByPlayer(boolean beingPickedByPlayer) {
         this.beingPickedByPlayer = beingPickedByPlayer;
@@ -49,44 +63,63 @@ public abstract class LivingEntityMixin extends Entity implements Nameable, Enti
 
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     public void tick(CallbackInfo ci) {
+        if(picker != null){
+            // set posiiton to above the picker 2 blocks
+            if(((PlayerEntityExt)picker).getIncreasedSize()){
+                this.setPos(picker.getX(), picker.getY() + 4, picker.getZ());
+            }
+            else {
+                this.setPos(picker.getX(), picker.getY() + 2, picker.getZ());
+            }
+        }
         if(beingThrownByPrey){
             // get velocity
             Vec3d velocity = this.getVelocity();
             float magnitude = (float) Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
-            if(magnitude < 0.6f){
-                beingThrownByPrey = false;
+            if(magnitude < 0.1f){
                 // spawn a cloud of particles
                 for(int i = 0; i < 280; i++){
                     this.world.addParticle(ModParticles.FEATHER_PARTICLE, this.getX(), this.getY(), this.getZ(), 0, 0, 0);
                 }
                 particles();
                 beingThrownByPrey = false;
+                world.createExplosion(this, this.getX(), this.getY(), this.getZ(), 4, Explosion.DestructionType.DESTROY);
                 this.discard();
             }
             world.getOtherEntities(this, this.getBoundingBox().expand(2), (entity) -> {
                 return entity instanceof LivingEntity;
             }).forEach((entity) -> {
-                if(entity != this){
+                if(entity != this && entity != picker){
                     entity.damage(DamageSource.MAGIC, 4);
                 }
             });
             //world.createExplosion(this, this.getX(), this.getY(), this.getZ(), 3, Explosion.DestructionType.BREAK);
         }
+        // get velocity
+        Vec3d velocity = this.getVelocity();
+        float magnitude = (float) Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
+
+        /*
         if (beingPickedByPlayer) {
             // get velocity
-            Vec3d velocity = this.getVelocity();
-            float magnitude = (float) Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
-            if (magnitude < 0.6f) {
-                beingPickedByPlayer = false;
-                // set velocity from this to above prey
-                Vec3d preyPos = SetHunterCommand.pray.getPos();
-                Vec3d thisPos = this.getPos();
-                Vec3d direction = preyPos.subtract(thisPos);
-                direction = direction.normalize();
-                direction = direction.multiply(0.6);
-                this.setVelocity(direction);
+            if(SetHunterCommand.pray == null){
+                sendMessage(Text.of("Please set prey"));
             }
-        }
+            else {
+                Vec3d velocity = this.getVelocity();
+                float magnitude = (float) Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
+                if (magnitude < 0.6f) {
+                    beingPickedByPlayer = false;
+                    // set velocity from this to above prey
+                    Vec3d preyPos = SetHunterCommand.pray.getPos();
+                    Vec3d thisPos = this.getPos();
+                    Vec3d direction = preyPos.subtract(thisPos);
+                    direction = direction.normalize();
+                    direction = direction.multiply(0.6);
+                    this.setVelocity(direction);
+                }
+            }
+        }*/
     }
 
     void particles(){

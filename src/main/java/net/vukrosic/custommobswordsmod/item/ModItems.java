@@ -6,6 +6,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.vukrosic.custommobswordsmod.CustomMobSwordsMod;
 import net.vukrosic.custommobswordsmod.entity.ModEntities;
+import net.vukrosic.custommobswordsmod.entity.custom.FireOrbEntity;
 import net.vukrosic.custommobswordsmod.item.custom.*;
 
 
@@ -16,6 +17,8 @@ public class ModItems {
             new Item(new FabricItemSettings().group(ItemGroup.MISC)));
     public static final Item FIRE_PEARL = registerItem("fire_pearl",
             new FirePearlItem(new FabricItemSettings().group(ItemGroup.MISC)));
+    public static final Item FIRE_ORB = registerItem("fire_orb",
+            new FireOrbItem(new FabricItemSettings().group(ItemGroup.MISC)));
 
 
     private static Item registerItem(String name, Item item) {

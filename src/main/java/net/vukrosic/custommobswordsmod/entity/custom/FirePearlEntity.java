@@ -14,6 +14,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 
 import java.util.Random;
 
@@ -25,7 +27,7 @@ public class FirePearlEntity extends EnderPearlEntity {
         super(world, owner);
     }
 
-
+    // inject so it floats around the thrower
 
     // on hit create explosion
 
@@ -45,8 +47,4 @@ public class FirePearlEntity extends EnderPearlEntity {
         // set block to lava
         this.world.setBlockState(new BlockPos(entityHitResult.getPos()), net.minecraft.block.Blocks.LAVA.getDefaultState());
     }
-
-
-
-
 }

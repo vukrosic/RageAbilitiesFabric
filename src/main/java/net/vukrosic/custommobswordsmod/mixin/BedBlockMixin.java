@@ -4,18 +4,13 @@ import net.minecraft.block.BedBlock;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalFacingBlock;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
-import net.minecraft.world.explosion.Explosion;
-import net.minecraft.world.explosion.ExplosionBehavior;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
 import org.spongepowered.asm.mixin.Mixin;
@@ -44,7 +39,7 @@ public abstract class BedBlockMixin extends HorizontalFacingBlock implements Blo
             PlayerEntity pray = SetHunterCommand.pray;
             double distance = SetHunterCommand.pray.squaredDistanceTo(pos.getX(), pos.getY(), pos.getZ());
             if (distance < radius * radius) {
-                ((PlayerEntityExt)pray).setBedAbilityActive(true);
+                ((PlayerEntityExt)pray).setSuperjumping(true);
                 pray.sendMessage(Text.of("YOU GOT THE BED ABILITY"), false);
             }
         }
