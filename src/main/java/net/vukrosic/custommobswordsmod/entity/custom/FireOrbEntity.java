@@ -5,6 +5,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.text.Text;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -16,28 +17,34 @@ public class FireOrbEntity extends EnderPearlEntity {
 
     // define thrower
     public PlayerEntity thrower;
-
-    public FireOrbEntity(EntityType<? extends EnderPearlEntity> entityType, World world) {
-        super(entityType, world);
+    int positionCounter = 0;
+    public FireOrbEntity(World world, LivingEntity owner) {
+        super(world, owner);
     }
 
 
     @Override
     public void tick() {
         super.tick();
-        // make a circular motion around y axis
-        // get current position
-        Vec3d pos = this.getPos();
-        // get current rotation
-        Vec3d rot = this.getRotationVector();
-        // calculate new position
-        double x = pos.x + rot.x * 0.1;
-        double y = pos.y + rot.y * 0.1;
-        double z = pos.z + rot.z * 0.1;
-        // set new position
-        this.setPos(x, y, z);
+        // set position to 2 above player
+        //this.setPos(this.thrower.getX(), this.thrower.getY() + 2, this.thrower.getZ());
 
-/*
+        positionCounter+=1;
+        if(positionCounter== 360){
+            positionCounter = 0;
+        }
+        //translatePosition();
+
+        // get a random 20%
+        if(Math.random() < 0.2){
+            setCircularVelocity();
+        }
+        addVelocityTowardsOrAwayFromPlayer();
+
+        //shootFireball();
+    }
+
+    private void shootFireball() {
         if (Math.random() < 0.03) {
             boolean shotHunter = false;
             for (LivingEntity livingEntity : this.world.getEntitiesByClass(LivingEntity.class, this.getBoundingBox().expand(40), livingEntity -> livingEntity != this.getOwner())) {
@@ -71,19 +78,51 @@ public class FireOrbEntity extends EnderPearlEntity {
                     // break
                     break;
                 }
-
-
-
-                // make it float around the owner
-                if (this.getOwner() != null) {
-                    Vec3d ownerPos = this.getOwner().getPos();
-                    Vec3d thisPos = this.getPos();
-                    Vec3d diff = ownerPos.subtract(thisPos);
-                    Vec3d diffNormalized = diff.normalize();
-                    Vec3d diffNormalizedScaled = diffNormalized.multiply(0.1);
-                    this.setVelocity(diffNormalizedScaled);
-                }
             }
-        }*/
+        }
+    }
+
+    private void addVelocityTowardsOrAwayFromPlayer() {
+        // calcualte distance to palyer
+        double distance = this.getPos().distanceTo(this.thrower.getPos());
+        // if it's too close
+        if(distance > 3){
+            // get velocity towards hunter
+            Vec3d throwerPosition = this.thrower.getPos();
+            // move up by 2
+            throwerPosition = throwerPosition.add(0, 2, 0);
+            Vec3d velocity = throwerPosition.subtract(this.getPos()).normalize().multiply(0.1);
+            // set velocity
+            this.addVelocity(velocity.x, velocity.y, velocity.z);
+        } else if(distance < 3){
+            // get velocity towards hunter
+            Vec3d velocity = this.getPos().subtract(this.thrower.getPos()).normalize().multiply(0.1);
+            // set velocity
+            this.addVelocity(velocity.x, velocity.y, velocity.z);
+        }
+    }
+
+    private void setCircularVelocity() {
+        // get closest distance to player
+        // get player to this vector
+        Vec3d playerToThis = this.getPos().subtract(this.thrower.getPos());
+        // give velocity with a normal vector
+        Vec3d normal = playerToThis.crossProduct(new Vec3d(0, 1, 0)).normalize();
+        // get velocity
+        Vec3d velocity = normal.multiply(0.3);
+        // set velocity
+        this.setVelocity(velocity);
+    }
+
+    private void translatePosition() {
+        int radius = 2;
+        double x = thrower.getX();
+        double z = thrower.getZ();
+        double angle = positionCounter * Math.PI / 180;
+        double dx = x + radius * Math.cos(angle);
+        double dz = z + radius * Math.sin(angle);
+        this.setPos(dx, thrower.getY() + 2, dz);
+        thrower.sendMessage(Text.of("x: " + dx + " z: " + dz), false);
+
     }
 }

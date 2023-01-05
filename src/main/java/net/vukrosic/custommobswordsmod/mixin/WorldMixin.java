@@ -23,7 +23,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.event.GameEvent;
-import net.vukrosic.custommobswordsmod.effect.ModEffects;
+
 import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;

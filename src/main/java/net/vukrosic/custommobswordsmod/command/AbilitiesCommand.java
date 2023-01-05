@@ -25,27 +25,17 @@ public class AbilitiesCommand {
                     .executes((context) -> {
                         return resetChestCounter(context.getSource()/*, EntityArgumentType.getEntities(context, "targets")*/);
                     })))
-            .then(CommandManager.literal("bedAbilityEnabled") // boolean argument
-                    .then(CommandManager.literal("true")
-                            .executes((context) -> {
-                                return bedAbilityEnabledTrue(context.getSource()/*, EntityArgumentType.getEntities(context, "targets")*/);
-                            }))
-                    .then(CommandManager.literal("false")
-                            .executes((context) -> {
-                                return bedAbilityEnabledFalse(context.getSource()/*, EntityArgumentType.getEntities(context, "targets")*/);
-                            })))
             .then(CommandManager.literal("setAbilityLevel") // int argument
                     .then(CommandManager.argument("level", IntegerArgumentType.integer(0, 3))
                             .executes((context) -> {
                                 return setAbilityLevel((ServerCommandSource)context.getSource(), IntegerArgumentType.getInteger(context, "level"));
-                            }))
+                            })))
             .then(CommandManager.literal("hitBossBar")
                     .then(CommandManager.literal("disable")
                             .executes((context) -> {
                                 return hitBossBarDisable(context.getSource()/*, EntityArgumentType.getEntities(context, "targets")*/);
                             })))
-        ));
-
+        );
     }
 
     private static int setAbilityLevel(ServerCommandSource source, int level) {
@@ -62,15 +52,7 @@ public class AbilitiesCommand {
         return 1;
     }
 
-    private static int bedAbilityEnabledFalse(ServerCommandSource source) {
-        ((PlayerEntityExt) Objects.requireNonNull(source.getPlayer())).setSuperjumping(false);
-        return 1;
-    }
 
-    private static int bedAbilityEnabledTrue(ServerCommandSource source) {
-        ((PlayerEntityExt) Objects.requireNonNull(source.getPlayer())).setSuperjumping(true);
-        return 1;
-    }
 
 
 

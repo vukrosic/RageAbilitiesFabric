@@ -11,17 +11,18 @@ import net.vukrosic.custommobswordsmod.CustomMobSwordsMod;
 import net.vukrosic.custommobswordsmod.entity.custom.*;
 
 public class ModEntities {
+    /*
     public static final EntityType<LavaBlockEntity> LAVA_BLOCK_ENTITY = Registry.register(
             Registry.ENTITY_TYPE, new Identifier(CustomMobSwordsMod.MOD_ID, "lava_block_entity"),
             FabricEntityTypeBuilder.create(SpawnGroup.MONSTER, LavaBlockEntity::new)
                     .dimensions(EntityDimensions.fixed(0.6F, 0.6F))
-                    .build());
+                    .build());*/
 
-    public static final EntityType<FireOrbEntity> FIRE_ORB_ENTITY = Registry.register(
+    /*public static final EntityType<FireOrbEntity> FIRE_ORB_ENTITY = Registry.register(
             Registry.ENTITY_TYPE, new Identifier(CustomMobSwordsMod.MOD_ID, "fire_orb_entity"),
             FabricEntityTypeBuilder.create(SpawnGroup.MONSTER, FireOrbEntity::new)
                     .dimensions(EntityDimensions.fixed(0.6F, 0.6F))
-                    .build());
+                    .build());*/
 
 
     private static Item registerEntityItem(EntityType<?> entityType, Item item) {

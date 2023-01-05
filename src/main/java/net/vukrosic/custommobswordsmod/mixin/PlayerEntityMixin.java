@@ -1,5 +1,7 @@
 package net.vukrosic.custommobswordsmod.mixin;
 
+import io.netty.buffer.Unpooled;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
@@ -8,26 +10,26 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.entity.boss.ServerBossBar;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.vukrosic.custommobswordsmod.command.AbilitiesCommand;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
-import net.vukrosic.custommobswordsmod.entity.ModEntities;
 import net.vukrosic.custommobswordsmod.entity.custom.FireOrbEntity;
 import net.vukrosic.custommobswordsmod.entity.custom.FirePearlEntity;
 import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
 import net.vukrosic.custommobswordsmod.item.ModItems;
 import net.vukrosic.custommobswordsmod.item.custom.ItemEntityMixinExt;
+import net.vukrosic.custommobswordsmod.networking.ModMessages;
 import net.vukrosic.custommobswordsmod.util.abilities.PlayerAbilities;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -41,177 +43,181 @@ import java.util.*;
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEntityExt {
 
-
+    //public ArrayList<ItemEntity> pickedUpBlocks = new ArrayList<>();
+   // public boolean pickUpBlocks = false;
     float rageBarProgress = 0f;
 
     boolean isSpawningLavaAround = false;
     // bed ability
-    boolean isSuperjumping = false;
-    // overrride getter and setter
-    // super jump
-    boolean activeAbilityActive = false;
     int fireSizeIncreaseCoundown = -10;
     int jumpTimer = 0;
     boolean hasFireOrb = false;
     boolean increasedSize = false;
-
+    boolean flyingEnabled = false;
+    FireOrbEntity fireOrb = null;
     ServerBossBar rageBar = new ServerBossBar(Text.of("RageBar"), BossBar.Color.RED, BossBar.Style.PROGRESS);
     @Shadow
     private PlayerInventory inventory;
-
+/*
+    @Override
+    public void addPickUpBlocks(ItemEntity itemEntity) {
+        this.pickedUpBlocks.add(itemEntity);
+    }*/
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
     }
+
 
     @Shadow
     public abstract void sendMessage(Text message, boolean overlay);
     @Shadow
     public abstract void jump();
-    @Override
-    public boolean getActiveAbilityActive() {
-        return activeAbilityActive;
-    }
+
     @Override
     public boolean getIncreasedSize() {
         return increasedSize;
     }
+
+    /*
     @Override
-    public void setActiveAbilityActive(boolean activeAbilityActive) {
-        this.activeAbilityActive = activeAbilityActive;
-        if(!activeAbilityActive) {
-            // clear all effects
-            this.clearStatusEffects();
-            ServerCommandSource commandSource = this.getCommandSource();
-            PlayerEntity player = (PlayerEntity) (Object) this;
-            CommandManager commandManager = Objects.requireNonNull(player.getServer()).getCommandManager();
-            if (commandManager != null) {
-                commandManager.executeWithPrefix(commandSource, "/scale set 1");
-                increasedSize = false;
-            }
-            return;
+    public void setPickUpBlocks(boolean pickUpBlocks) {
+        this.pickUpBlocks = pickUpBlocks;
+    }
+*/
+    public void removeBossBar(){
+        this.rageBar.removePlayer((ServerPlayerEntity) (Object) this);
+        this.rageBar.setVisible(false);
+    }
+/*
+    @Override
+    public void pickUpBlocksInXBlockRadius(int radius){
+
+        // get block below this
+        BlockPos blockPos = this.getBlockPos().add(0, -1, 0);
+        // get block state
+        BlockState blockState = this.world.getBlockState(blockPos);
+        // spawn item
+        ItemEntity itemEntity = new ItemEntity(this.world, this.getX(), this.getY(), this.getZ(), new ItemStack(blockState.getBlock()));
+        // place it on the ground around randomly
+        itemEntity.refreshPositionAndAngles(SetHunterCommand.pray.getX(), SetHunterCommand.pray.getY() + 2.5, SetHunterCommand.pray.getZ(), 0, 0);
+        ((ItemEntityMixinExt) itemEntity).setPickedUp(true);
+        itemEntity.setNoGravity(true);
+        this.world.spawnEntity(itemEntity);
+        pickedUpBlocks.add(itemEntity);
+        this.world.setBlockState(blockPos.add(1,0,0), Blocks.AIR.getDefaultState());
+        //((ItemEntityMixinExt) itemEntity).setPickedUp(true);
+    }*/
+
+/*
+    @Override
+    public void throwBlocks(){
+        for(ItemEntity itemEntity : pickedUpBlocks){
+            Vec3d direction = getLookDirection((PlayerEntity)(Object)this, 1);
+            itemEntity.setVelocity(direction.multiply(7));
+            ((ItemEntityMixinExt) itemEntity).setPickedUp(false);
+            ((ItemEntityMixinExt) itemEntity).setBeingThrown(true);
+            itemEntity.setNoGravity(true);
+            SetHunterCommand.pray.sendMessage(Text.of("Throwing blocksssssss"), false);
         }
-        int duration = 20 * 50000;
-        if (PlayerAbilities.AbilityTier == 1) {
-            this.clearStatusEffects();
-            this.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, duration, 6));
-            this.addStatusEffect(new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, duration, 6));
-        } else if (PlayerAbilities.AbilityTier == 2) {
-            this.clearStatusEffects();
-            this.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, duration, 6));
-            this.addStatusEffect(new StatusEffectInstance(StatusEffects.JUMP_BOOST, duration, 6));
-            this.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, duration, 6));
-            this.addStatusEffect(new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, duration, 6));
-            ServerCommandSource commandSource = this.getCommandSource();
-            PlayerEntity player = (PlayerEntity) (Object) this;
-            CommandManager commandManager = Objects.requireNonNull(player.getServer()).getCommandManager();
-            if (commandManager != null) {
-                commandManager.executeWithPrefix(commandSource, "/scale set 2");
-                increasedSize = true;
-            }
-        } else if (PlayerAbilities.AbilityTier == 3) {
-            this.clearStatusEffects();
-            this.clearStatusEffects();
-            this.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, duration, 6));
-            this.addStatusEffect(new StatusEffectInstance(StatusEffects.JUMP_BOOST, duration, 6));
-            this.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, duration, 6));
-            this.addStatusEffect(new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, duration, 6));
-            ServerCommandSource commandSource = this.getCommandSource();
-            PlayerEntity player = (PlayerEntity) (Object) this;
-            CommandManager commandManager = Objects.requireNonNull(player.getServer()).getCommandManager();
-            if (commandManager != null) {
-                commandManager.executeWithPrefix(commandSource, "/scale set 2");
-            }
-            /*
-            setVelocity(0, 60, 0);
-            this.setVelocity(0, 60, 0);
-            this.addVelocity(0, 60, 0);
-            addVelocity(0, 60, 0);*/
-            setSuperjumping(true);
-        }
+        pickedUpBlocks.clear();
     }
 
-
-
-    @Override
-    public void setSuperjumping(boolean isBedAbilityActive) {
-        this.isSuperjumping = isBedAbilityActive;
-    }
+    private static Vec3d getLookDirection(PlayerEntity player, float throwForce) {
+        Vec3d cameraPos = player.getCameraPosVec(0);
+        //Vec3d cameraPos = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+        Vec3d cameraDirection = player.getRotationVec(0);
+        Vec3d vec3d3 = cameraDirection.subtract(cameraPos).multiply(throwForce);
+        Vec3d entityPos = player.getPos();
+        Vec3d lookRotation = player.getRotationVector();
+        Vec3d cameraPos1 = player.getCameraPosVec(0);
+        Vec3d crossPos = cameraPos1.add(lookRotation.multiply(100));
+        Vec3d direction = crossPos.subtract(entityPos).normalize();
+        return direction;
+    }*/
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void tick(CallbackInfo ci) {
+        /*
+        // big blocks
+        if(SetHunterCommand.pray != null && SetHunterCommand.pray.getUuid().equals(this.getUuid())) {
+            if (PlayerAbilities.AbilityTier == 3 && jumpTimer <= -14 && this.isOnGround() && activeAbilityActive) {
+                jumpTimer = 0;
+                if(!world.isClient)
+                    ServerPlayNetworking.send((ServerPlayerEntity) (Object) this, ModMessages.BOUNCE_BLOCKS, PacketByteBufs.empty());
+                //smashPlayersIntoTheGround();
+                // get item below
+
+                //((ItemEntityMixinExt) itemEntity).setBouncing(true);
+            }
+            if (this.isOnGround()) {
+                jumpTimer = 0;
+            } else {
+                jumpTimer--;
+            }
+        }
+        PlayerAbilities.bigBlocksTimer = 10;
+        if(PlayerAbilities.bigBlocksTimer > 0){
+            PlayerAbilities.bigBlocksTimer--;
+        }
+*/
         if (!this.world.isClient) {
             if (rageBarProgress > 0 && Math.random() < 0.3) {
                 rageBar.setPercent(rageBarProgress);
-                if (this.rageBar.getPlayers().size() == 0 && SetHunterCommand.pray == (Object) this) {
+                if (this.rageBar.getPlayers().size() == 0 && SetHunterCommand.pray == (PlayerEntity)(Object) this) {
                     this.rageBar.addPlayer((ServerPlayerEntity) (Object) this);
                     if (!AbilitiesCommand.serverBossBars.contains(rageBar)) {
                         AbilitiesCommand.serverBossBars.add(rageBar);
                     }
                 }
             }
-
-
-
-            fireSizeIncreaseCoundown();
+            if(PlayerAbilities.AbilityTier != 0 && (this.rageBar.getPlayers().contains((ServerPlayerEntity) (Object) this) || rageBar.isVisible())) {
+                removeBossBar();
+            }
 
 /*
-            if (isSuperjumping && jumpTimer > -5) {
-                jumpTimer--;
+            for(ItemEntity itemEntity : pickedUpBlocks){
+                itemEntity.setPos(this.getX(), this.getY() + 2.5f, this.getZ());
+                //itemEntity.setVelocity(0, 0, 0);
             }*/
 
-            if (PlayerAbilities.AbilityTier == 3 && jumpTimer <= -14 && this.isOnGround()) {
-                jumpTimer = 0;
-                setSuperjumping(false);
-                bounceUpBlocksAround();
-                smashPlayersIntoTheGround();
-            }
-            if (this.isOnGround()) {
-                jumpTimer = 0;
-            }
-            else {
-                jumpTimer--;
-            }
 
-
-            if (PlayerAbilities.AbilityTier == 1 || PlayerAbilities.AbilityTier == 2) {
-                if(activeAbilityActive) {
-                    setFireBehind();
+            if(SetHunterCommand.pray != null && SetHunterCommand.pray.getUuid().equals(this.getUuid())) {
+                if (PlayerAbilities.AbilityTier >= 2 && jumpTimer <= -20 && this.isOnGround() && PlayerAbilities.ActiveAbility) {
+                    jumpTimer = 0;
+                    //smashPlayersIntoTheGround();
+                    bounceUpBlocksAround();
                 }
-            }
-            else if (PlayerAbilities.AbilityTier == 3) {
-
-                if(!hasFireOrb) {
-                    sendMessage(Text.of("Spawning fire orb!"), false);
-                    FireOrbEntity fireOrbEntity = new FireOrbEntity(ModEntities.FIRE_ORB_ENTITY, this.world);
-                    fireOrbEntity.setOwner((PlayerEntity) (Object) this);
-                    fireOrbEntity.thrower = (PlayerEntity) (Object) this;
+                if (this.isOnGround()) {
+                    jumpTimer = 0;
+                } else {
+                    jumpTimer--;
                 }
-            }
-            else if (PlayerAbilities.AbilityTier == 4) {
-                if(isOnGround())
-                    turnFloorIntoNetherrack();
-            }
 
-        }
-    }
 
-    private void smashPlayersIntoTheGround() {
-        // if SetHunterCommand.hunters is not empty
-        if(SetHunterCommand.hunters != null) {
-            for (PlayerEntity hunter : SetHunterCommand.hunters) {
-                if (hunter != (Object) this) {
-                    // if hunter is in range of 5 blocks
-                    if (hunter.distanceTo( this) < 10) {
-                        // teleport hunter to the ground
-                        hunter.teleport(hunter.getX(), this.getY() - 2, hunter.getZ());
+                if (PlayerAbilities.AbilityTier != 0) {
+                    if (PlayerAbilities.ActiveAbility && this.isOnGround()) {
+                        setFireBehind();
                     }
                 }
+
+
+                if (PlayerAbilities.AbilityTier == 4) {
+                    if (isOnGround())
+                        turnFloorIntoNetherrack();
+                }
+
             }
+
+
         }
     }
 
+
+
+
+
     private void setFireBehind() {
-        if (this.isSprinting()) {
+        if (this.isSprinting() && this.isOnGround()) {
             Vec3d direction = this.getRotationVector();
             Vec3d position = this.getPos();
             BlockPos blockBehind = new BlockPos(position.x - direction.x, position.y - direction.y, position.z - direction.z);
@@ -230,8 +236,6 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     }
 
     private void turnFloorIntoNetherrack() {
-
-        // get all ground blocks around
         for (int x = -5; x < 5; x++) {
             for (int z = -5; z < 5; z++) {
                 // turn it to netherrack
@@ -268,8 +272,11 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
     public void damage(DamageSource damageSource_1, float float_1, CallbackInfoReturnable<Boolean> cir) {
         if (!this.world.isClient) {
-
+            if (SetHunterCommand.pray != null && SetHunterCommand.pray.getUuid() == this.getUuid()) {
+                PlayerAbilities.onPreyTakeDamage(damageSource_1, float_1, (PlayerEntity) (Object) this);
+            }
             // if damage source is fire
+            /*
             if (SetHunterCommand.pray != null && SetHunterCommand.pray == (Object) this && damageSource_1.isFire()) {
                 ServerCommandSource commandSource = this.getCommandSource();
                 PlayerEntity player = (PlayerEntity) (Object) this;
@@ -282,8 +289,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
                     commandManager.executeWithPrefix(commandSource, "/effect give @s minecraft:resistance 100 5");
                     fireSizeIncreaseCoundown = 1800;
                 }
-            }
-
+            }*/
 
             if (damageSource_1.getAttacker() instanceof PlayerEntity attacker &&
                     SetHunterCommand.hunters.contains(attacker)) {
@@ -292,14 +298,29 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
                     rageBarProgress = 1f;
                 }
             }
+            // testing by fire damage
+            if (damageSource_1.isFire()) {
+                rageBarProgress += 0.1f;
+                if (rageBarProgress >= 1f) {
+                    rageBarProgress = 1f;
+                }
+            }
             // if bar is full
+            /*
             if (damageSource_1.getAttacker() instanceof PlayerEntity)
-                if(PlayerAbilities.AbilityTier == 1)
-                    damageSource_1.getAttacker().setOnFireFor(3);
-                else if(PlayerAbilities.AbilityTier == 2)
-                    shootLava();
-
+                if(SetHunterCommand.pray != null && SetHunterCommand.pray == (PlayerEntity) (Object)this) {
+                    if (PlayerAbilities.AbilityTier == 1)
+                        damageSource_1.getAttacker().setOnFireFor(3);
+                    else if (PlayerAbilities.AbilityTier == 2)
+                        shootLava();
+                }
+            */
         }
+    }
+
+    @Shadow
+    private PlayerInventory getInventory() {
+        return null;
     }
 
 
@@ -348,13 +369,54 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
             ItemEntity itemEntity = new ItemEntity(this.world, this.getX(), this.getY(), this.getZ(), new ItemStack(blockStateList.get(i).getBlock()));
             // place it on the ground around randomly
             itemEntity.refreshPositionAndAngles(blockPosList.get(i).getX(), blockPosList.get(i).getY() + 1, blockPosList.get(i).getZ(), 0, 0);
-            ((ItemEntityMixinExt) itemEntity).setBouncing(true);
+            //((ItemEntityMixinExt) itemEntity).setBouncing(true);
+            ServerPlayNetworking.send((ServerPlayerEntity) (Object) this, ModMessages.BOUNCE_BLOCKS, new PacketByteBuf(Unpooled.buffer()));
             // add velocity away from the player
             float force = 0.25F;
             itemEntity.addVelocity((blockPosList.get(i).getX() - this.getBlockPos().getX()) * force, force, (blockPosList.get(i).getZ() - this.getBlockPos().getZ()) * force);
             this.world.spawnEntity(itemEntity);
+            ((ItemEntityMixinExt) itemEntity).setBouncing(true);
+            itemEntity.setPickupDelayInfinite();
             // remove block
             this.world.setBlockState(blockPosList.get(i), Blocks.AIR.getDefaultState());
         }
     }
+
+
+/*
+    void pickUpBlocksAround() {
+        // make a list of all blocks around the player
+        List<BlockPos> blockPosList = new ArrayList<>();
+        for (int x = -3; x < 4; x++) {
+            for (int y = -1; y < 1; y++) {
+                for (int z = -3; z < 4; z++) {
+                    blockPosList.add(SetHunterCommand.pray.getBlockPos().add(x, y, z));
+                }
+            }
+        }
+        // get block state of all blocks
+        List<BlockState> blockStateList = new ArrayList<>();
+        for (BlockPos blockPos : blockPosList) {
+            blockStateList.add(SetHunterCommand.pray.world.getBlockState(blockPos));
+        }
+        // spawn item entity for all blocks
+        for (int i = 0; i < blockStateList.size(); i++) {
+            ItemEntity itemEntity = new ItemEntity(SetHunterCommand.pray.world, SetHunterCommand.pray.getX(), SetHunterCommand.pray.getY(), SetHunterCommand.pray.getZ(),
+                    new ItemStack(blockStateList.get(i).getBlock()));
+            // place it on the ground around randomly
+            itemEntity.refreshPositionAndAngles(blockPosList.get(i).getX(), blockPosList.get(i).getY() + 1, blockPosList.get(i).getZ(), 0, 0);
+            //((ItemEntityMixinExt) itemEntity).setBouncing(true);
+            //ServerPlayNetworking.send((ServerPlayerEntity) (Object) SetHunterCommand.pray, ModMessages.BOUNCE_BLOCKS, new PacketByteBuf(Unpooled.buffer()));
+            // add velocity away from the player
+            float force = 0.25F;
+            // set position above the player
+            itemEntity.setPos(SetHunterCommand.pray.getX(), SetHunterCommand.pray.getY() + 3, SetHunterCommand.pray.getZ());
+            itemEntity.setNoGravity(true);
+
+            SetHunterCommand.pray.world.spawnEntity(itemEntity);
+            SetHunterCommand.pray.sendMessage(Text.of("position size: " + itemEntity.getPos()), false);
+            // remove block
+            SetHunterCommand.pray.world.setBlockState(blockPosList.get(i), Blocks.AIR.getDefaultState());
+        }
+    }*/
 }

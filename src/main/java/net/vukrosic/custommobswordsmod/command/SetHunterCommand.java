@@ -11,6 +11,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import net.vukrosic.custommobswordsmod.networking.ModMessages;
 
 import java.util.ArrayList;
@@ -19,7 +20,9 @@ import java.util.UUID;
 
 public class SetHunterCommand {
 
+
     public static PlayerEntity pray = null;
+    /// this variable is used a lot, but
     public static UUID prayUuid = null;
 
     public static ArrayList<PlayerEntity> hunters = new ArrayList<>();

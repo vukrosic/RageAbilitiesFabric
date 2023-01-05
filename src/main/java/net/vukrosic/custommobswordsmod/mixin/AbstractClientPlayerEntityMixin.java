@@ -26,10 +26,7 @@ public class AbstractClientPlayerEntityMixin implements IExampleAnimatedPlayer {
      */
     @Inject(method = "<init>", at = @At(value = "RETURN"))
     private void init(ClientWorld world, GameProfile profile, PlayerPublicKey publicKey, CallbackInfo ci) {
-        //Mixin does not know (yet) that this will be merged with AbstractClientPlayerEntity
         PlayerAnimationAccess.getPlayerAnimLayer((AbstractClientPlayerEntity) (Object)this).addAnimLayer(1000, modAnimationContainer); //Register the layer with a priority
-        //The priority will tell, how important is this animation compared to other mods. Higher number means higher priority
-        //Mods with higher priority will override the lower priority mods (if they want to animation anything)
     }
 
     /**

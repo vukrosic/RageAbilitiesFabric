@@ -14,6 +14,9 @@ import net.minecraft.world.World;
 import net.vukrosic.custommobswordsmod.entity.ModEntities;
 import net.vukrosic.custommobswordsmod.entity.custom.FireOrbEntity;
 import net.vukrosic.custommobswordsmod.entity.custom.FirePearlEntity;
+import net.vukrosic.custommobswordsmod.item.ModItems;
+
+import java.util.Random;
 
 public class FireOrbItem extends Item {
     public FireOrbItem(Settings settings) {
@@ -25,9 +28,10 @@ public class FireOrbItem extends Item {
         //world.playSound(null, user.getX(), user.getY(), user.getZ(), SoundEvents.ENTITY_ENDER_PEARL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F));
         user.getItemCooldownManager().set(this, 20);
         if (!world.isClient) {
-            FireOrbEntity enderPearlEntity = new FireOrbEntity(ModEntities.FIRE_ORB_ENTITY, world);
+            FireOrbEntity enderPearlEntity = new FireOrbEntity(world,user);
             user.sendMessage(Text.of("FireOrbEntity: " + enderPearlEntity), false);
-            enderPearlEntity.setItem(itemStack);
+            enderPearlEntity.setItem(ModItems.FIRE_ORB.getDefaultStack());
+            enderPearlEntity.setVelocity(user, user.getPitch(), user.getYaw(), 0.0F, 1.5F, 0);
             enderPearlEntity.thrower = user;
             world.spawnEntity(enderPearlEntity);
         }
@@ -39,5 +43,5 @@ public class FireOrbItem extends Item {
 
         return TypedActionResult.success(itemStack, world.isClient());
     }
-    
+
 }

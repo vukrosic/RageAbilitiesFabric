@@ -10,4 +10,6 @@ public interface ItemEntityMixinExt {
     void setThrownBy(PlayerEntity player);
     void setBouncing(boolean bouncing);
     boolean getBouncing();
+    public void setPickedUp(boolean pickedUp);
+    public void setBeingThrown(boolean isBeingThrown);
 }

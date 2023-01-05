@@ -2,7 +2,9 @@ package net.vukrosic.custommobswordsmod.mixin;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Items;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -17,6 +19,7 @@ import net.minecraft.world.dimension.DimensionType;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.networking.ModMessages;
 import net.vukrosic.custommobswordsmod.util.ThrowingAnimationManager;
+import net.vukrosic.custommobswordsmod.util.TickCounter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -34,6 +37,7 @@ public abstract class ServerWorldMixin extends World implements StructureWorldAc
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void tick(CallbackInfo ci) {
+        TickCounter.calledEveryTick();
         if(SetHunterCommand.pray == null){
             if(SetHunterCommand.prayUuid != null){
                 SetHunterCommand.pray = getPlayerByUuid(SetHunterCommand.prayUuid);
@@ -48,13 +52,14 @@ public abstract class ServerWorldMixin extends World implements StructureWorldAc
             }
         }
         // create new buffer new PacketByteBuf(Unpooled.buffer())
+        /*
         PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
         buffer.writeBoolean(false);
         if(SetHunterCommand.pray != null && ThrowingAnimationManager.throwingPlayer != null) {
             buffer.writeBoolean(true);
             buffer.writeUuid(ThrowingAnimationManager.throwingPlayer.getUuid());
             ServerPlayNetworking.send((ServerPlayerEntity)SetHunterCommand.pray, ModMessages.EVERY_TICK, buffer);
-        }
+        }*/
 
     }
 

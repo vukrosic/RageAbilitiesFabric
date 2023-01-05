@@ -1,5 +1,6 @@
 package net.vukrosic.custommobswordsmod.entity.custom;
 
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.util.math.Vec3d;
 
 public interface PlayerEntityExt {
@@ -13,15 +14,17 @@ public interface PlayerEntityExt {
     boolean isInChickenDimention = false;*/
     // bedAbility
     boolean isBedAbilityActive = false;
-    // bed ability getter and setter
-    void setSuperjumping(boolean isBedAbilityActive);
-    // getter
+
+    void setFlyingEnabled(boolean enabled);
+
+    void setPickUpBlocks(boolean pickUpBlocks);
 
     boolean superJumpActive = false;
     // setter and getter
     void setActiveAbilityActive(boolean superJumpActive);
     boolean getActiveAbilityActive();
     boolean getIncreasedSize();
+
     boolean getSuperJumpActive();
 
     void setNeedsToGetVelocity(boolean needsToGetVelocity);
@@ -53,4 +56,9 @@ public interface PlayerEntityExt {
     boolean getFireInfected();
 
 
+    //void pickUpBlocksInXBlockRadius(int radius);
+
+     void addPickUpBlocks(ItemEntity itemEntity);
+
+    void throwBlocks();
 }

@@ -26,10 +26,6 @@ public abstract class ClientWorldMixin extends World {
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void countTicks(CallbackInfo info){
         TickCounter.incrementTickCounter();
-        TickCounter.calledEveryTick();
-        if(Math.random() < 0.05){
-            System.out.println("ClientWorldMixin TickCounter: " + TickCounter.getTickCounter());
-        }
     }
 /*
     public static int getTickCounter() {

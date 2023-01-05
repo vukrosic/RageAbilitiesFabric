@@ -9,6 +9,7 @@ import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 public class SetHunterCommandS2CPacket {
     public static void receive(MinecraftClient minecraftClient, ClientPlayNetworkHandler clientPlayNetworkHandler,
                                PacketByteBuf packetByteBuf, PacketSender packetSender) {
-        //SetHunterCommand.pray = packetByteBuf.readUuid();
+        SetHunterCommand.prayUuid = packetByteBuf.readUuid();
+        SetHunterCommand.pray = minecraftClient.world.getPlayerByUuid(SetHunterCommand.prayUuid);
     }
 }

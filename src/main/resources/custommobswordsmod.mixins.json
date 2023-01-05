@@ -10,18 +10,15 @@
     "ServerPlayerInteractionManagerMixin",
     "ServerWorldMixin",
     "PlayerEntityMixin",
-    "BedBlockMixin",
-    "PlayerEntityModelMixin",
     "BipedEntityModelMixin",
     "EnderPearlEntityMixin"
   ],
   "client": [
-    "ExampleMixin",
     "InGameHudMixin",
     "ClientWorldMixin",
-    "CompassAnglePredicateProviderMixin",
     "ItemEntityRendererMixin",
-    "AbstractClientPlayerEntityMixin"
+    "AbstractClientPlayerEntityMixin",
+    "HandledScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

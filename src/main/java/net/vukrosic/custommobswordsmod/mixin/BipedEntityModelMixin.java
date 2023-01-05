@@ -33,6 +33,7 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity> extends Anim
     @Inject(method = "positionRightArm", at = @At("HEAD"), cancellable = true)
     private void positionRightArm(T entity, CallbackInfo ci) {
         // make arm point upwards
+        /*
         if (entity instanceof PlayerEntity player) {
             if (PlayerAbilities.pickedEntities.size() > 0) {
                 this.rightArm.pitch = holdingAnimationAngle;
@@ -47,6 +48,6 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity> extends Anim
                 }
                 ci.cancel();
             }
-        }
+        }*/
     }
 }
