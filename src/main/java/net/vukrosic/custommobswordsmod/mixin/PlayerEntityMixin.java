@@ -1,9 +1,11 @@
 package net.vukrosic.custommobswordsmod.mixin;
 
 import io.netty.buffer.Unpooled;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
@@ -12,6 +14,7 @@ import net.minecraft.entity.boss.ServerBossBar;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.command.CommandManager;
@@ -39,13 +42,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEntityExt {
 
     //public ArrayList<ItemEntity> pickedUpBlocks = new ArrayList<>();
    // public boolean pickUpBlocks = false;
-    float rageBarProgress = 0f;
+
 
     boolean isSpawningLavaAround = false;
     // bed ability
@@ -58,7 +62,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     ServerBossBar rageBar = new ServerBossBar(Text.of("RageBar"), BossBar.Color.RED, BossBar.Style.PROGRESS);
     @Shadow
     private PlayerInventory inventory;
-/*
+    /*
     @Override
     public void addPickUpBlocks(ItemEntity itemEntity) {
         this.pickedUpBlocks.add(itemEntity);
@@ -83,12 +87,6 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     public void setPickUpBlocks(boolean pickUpBlocks) {
         this.pickUpBlocks = pickUpBlocks;
     }
-*/
-    public void removeBossBar(){
-        this.rageBar.removePlayer((ServerPlayerEntity) (Object) this);
-        this.rageBar.setVisible(false);
-    }
-/*
     @Override
     public void pickUpBlocksInXBlockRadius(int radius){
 
@@ -137,6 +135,20 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void tick(CallbackInfo ci) {
+        if(!SetHunterCommand.huntersUUIDs.isEmpty() && SetHunterCommand.huntersUUIDs.contains(this.getUuid())
+        && PlayerAbilities.AbilityTier == 3){
+            // get all entities in 10 block radius
+            List<Entity> entities = this.world.getOtherEntities(this, new Box(this.getBlockPos()).expand(1));
+            // check if there is a fire orb
+            for(Entity entity : entities){
+                if(entity instanceof LivingEntity livingEntity && !(livingEntity instanceof PlayerEntity)){
+                    if(Math.random() < 0.1f){
+                        SetHunterCommand.pray.sendMessage(Text.of("!(livingEntity instanceof PlayerEntity) =" + (livingEntity instanceof PlayerEntity) ), false);
+                        this.damage(DamageSource.MAGIC, 2);
+                    }
+                }
+            }
+        }
         /*
         // big blocks
         if(SetHunterCommand.pray != null && SetHunterCommand.pray.getUuid().equals(this.getUuid())) {
@@ -144,7 +156,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
                 jumpTimer = 0;
                 if(!world.isClient)
                     ServerPlayNetworking.send((ServerPlayerEntity) (Object) this, ModMessages.BOUNCE_BLOCKS, PacketByteBufs.empty());
-                //smashPlayersIntoTheGround();
+                //PlayerAbilities.smashPlayersIntoTheGround();
                 // get item below
 
                 //((ItemEntityMixinExt) itemEntity).setBouncing(true);
@@ -160,19 +172,33 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
             PlayerAbilities.bigBlocksTimer--;
         }
 */
+
         if (!this.world.isClient) {
-            if (rageBarProgress > 0 && Math.random() < 0.3) {
-                rageBar.setPercent(rageBarProgress);
-                if (this.rageBar.getPlayers().size() == 0 && SetHunterCommand.pray == (PlayerEntity)(Object) this) {
+            if (PlayerAbilities.rageBarProgress > 0) {
+                rageBar.setPercent(PlayerAbilities.rageBarProgress);
+                if (SetHunterCommand.pray != null && SetHunterCommand.pray.getUuid().equals(this.getUuid()) && PlayerAbilities.AbilityTier == 0) {
                     this.rageBar.addPlayer((ServerPlayerEntity) (Object) this);
+                    this.rageBar.setVisible(true);
                     if (!AbilitiesCommand.serverBossBars.contains(rageBar)) {
                         AbilitiesCommand.serverBossBars.add(rageBar);
                     }
                 }
             }
-            if(PlayerAbilities.AbilityTier != 0 && (this.rageBar.getPlayers().contains((ServerPlayerEntity) (Object) this) || rageBar.isVisible())) {
-                removeBossBar();
+            else{
+                if (SetHunterCommand.pray != null && SetHunterCommand.pray.getUuid().equals(this.getUuid()) && PlayerAbilities.AbilityTier == 0) {
+                    if(this.rageBar.getPlayers().contains((ServerPlayerEntity) (Object) this)){
+                        this.rageBar.removePlayer((ServerPlayerEntity) (Object) this);
+                        this.rageBar.setVisible(false);
+                    }
+                    if (AbilitiesCommand.serverBossBars.contains(rageBar)) {
+                        AbilitiesCommand.serverBossBars.remove(rageBar);
+                    }
+                }
             }
+            /*
+            if(PlayerAbilities.AbilityTier != 0 && (this.rageBar.getPlayers().contains((ServerPlayerEntity) (Object) this))) {
+                removeBossBar();
+            }*/
 
 /*
             for(ItemEntity itemEntity : pickedUpBlocks){
@@ -181,9 +207,42 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
             }*/
 
 
+
+
+
+
+
             if(SetHunterCommand.pray != null && SetHunterCommand.pray.getUuid().equals(this.getUuid())) {
                 if (PlayerAbilities.AbilityTier >= 2 && jumpTimer <= -20 && this.isOnGround() && PlayerAbilities.ActiveAbility) {
                     jumpTimer = 0;
+                    if(!SetHunterCommand.hunters.isEmpty()) {
+                        if(SetHunterCommand.hunters.contains((PlayerEntity)(Object)this)){
+                            // teleport 2 blockd down
+                            this.teleport(this.getX(), this.getY() - 3, this.getZ());
+                            this.setVelocity(0, -2, 0);
+                            sendMessage(Text.of("Teleporting down"), false);
+                        }
+
+                        /*
+                        ArrayList<PlayerEntity> hunters = world.getPlayers().stream().filter(playerEntity -> SetHunterCommand.huntersUUIDs.contains(playerEntity.getUuid())).collect(Collectors.toCollection(ArrayList::new));
+                        for (PlayerEntity Hunter : hunters) {
+                            // if distance to prey is 3 or less, smash them into the ground
+                            if (Hunter.distanceTo(SetHunterCommand.pray) <= 4) {
+                                PlayerAbilities.smashPlayersIntoTheGround(Hunter);
+                                Hunter.sendMessage(Text.of("You have been smashed into the ground"), false);
+                                smashPlayersIntoTheGround(Hunter);
+                                secondTry(Hunter);
+                            }
+                        }*/
+                    }
+                    else {
+                        // send message with a list of all names
+                        String names = "";
+                        for (PlayerEntity hunter : SetHunterCommand.hunters) {
+                            names += hunter.getName() + ", ";
+                        }
+                        SetHunterCommand.pray.sendMessage(Text.of("Hunter are null, names: " + names), false);
+                    }
                     //smashPlayersIntoTheGround();
                     bounceUpBlocksAround();
                 }
@@ -210,11 +269,33 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
 
 
         }
+
+        //if(SetHunterCommand.hunters.contains(this)){
+        if(SetHunterCommand.pray != null) {
+            if (SetHunterCommand.pray.getUuid().equals(this.getUuid())) {
+                // if there are mobs in 1 block radius, damage this
+                List<Entity> entities = this.world.getOtherEntities(this, new Box(this.getBlockPos()).expand(1));
+                if (!entities.isEmpty()) {
+                    if (Math.random() < 0.2f) {
+                        this.damage(DamageSource.MAGIC, 2);
+                    }
+                }
+            }
+        }
     }
 
 
+    private void smashPlayersIntoTheGround(PlayerEntity hunter){
+        hunter.setVelocity(0, -2.5f, 0);
+        hunter.setPos(hunter.getX(), hunter.getY() - 2.5f, hunter.getZ());
+        hunter.teleport(hunter.getX(), hunter.getY() - 2.5f, hunter.getZ());
+        hunter.refreshPositionAfterTeleport(hunter.getX(), hunter.getY() - 2.5f, hunter.getZ());
+    }
 
-
+    private void secondTry(PlayerEntity hunter){
+        hunter.setVelocity(0, -0.5, 0);
+        hunter.teleport(hunter.getX(), hunter.getY() - 3, hunter.getZ());
+    }
 
     private void setFireBehind() {
         if (this.isSprinting() && this.isOnGround()) {
@@ -293,18 +374,20 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
 
             if (damageSource_1.getAttacker() instanceof PlayerEntity attacker &&
                     SetHunterCommand.hunters.contains(attacker)) {
-                rageBarProgress += 0.1f;
-                if (rageBarProgress >= 1f) {
-                    rageBarProgress = 1f;
+                PlayerAbilities.rageBarProgress += 0.1f;
+                if (PlayerAbilities.rageBarProgress >= 1f) {
+                    PlayerAbilities.rageBarProgress = 1f;
                 }
             }
             // testing by fire damage
             if (damageSource_1.isFire()) {
-                rageBarProgress += 0.1f;
-                if (rageBarProgress >= 1f) {
-                    rageBarProgress = 1f;
-                }
+
             }
+
+            if (damageSource_1.isFromFalling()) {
+
+            }
+
             // if bar is full
             /*
             if (damageSource_1.getAttacker() instanceof PlayerEntity)
@@ -327,10 +410,15 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
 
     @Inject(method = "onDeath", at = @At("HEAD"))
     public void onDeath(DamageSource damageSource_1, CallbackInfo ci) {
-        if (this.world.isClient) {
-            return;
+        if (!this.world.isClient) {
+            if(this.rageBar.getPlayers().contains((ServerPlayerEntity) (Object) this)){
+                this.rageBar.removePlayer((ServerPlayerEntity) (Object) this);
+            }
+            if (AbilitiesCommand.serverBossBars.contains(rageBar)) {
+                AbilitiesCommand.serverBossBars.remove(rageBar);
+            }
+            PlayerAbilities.rageBarProgress = 0f;
         }
-        this.rageBar.removePlayer((ServerPlayerEntity) (Object) this);
     }
 
 
@@ -419,4 +507,38 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
             SetHunterCommand.pray.world.setBlockState(blockPosList.get(i), Blocks.AIR.getDefaultState());
         }
     }*/
+
+    // inject into setHealth
+
+
+
+    @Override
+    public void setHealth(float health) {
+        if(health <= 0){
+            PlayerAbilities.rageBarProgress = 0f;
+            rageBar.removePlayer((ServerPlayerEntity) (Object) this);
+            rageBar.setVisible(false);
+            /*
+            if (PlayerAbilities.rageBarProgress > 0) {
+                rageBar.setPercent(PlayerAbilities.rageBarProgress);
+                if (SetHunterCommand.pray != null && SetHunterCommand.pray.getUuid().equals(this.getUuid()) && PlayerAbilities.AbilityTier == 0) {
+                    this.rageBar.addPlayer((ServerPlayerEntity) (Object) this);
+                    if (!AbilitiesCommand.serverBossBars.contains(rageBar)) {
+                        AbilitiesCommand.serverBossBars.add(rageBar);
+                    }
+                }
+            }
+            else{
+                if (SetHunterCommand.pray != null && SetHunterCommand.pray.getUuid().equals(this.getUuid()) && PlayerAbilities.AbilityTier == 0) {
+                    if(this.rageBar.getPlayers().contains((ServerPlayerEntity) (Object) this)){
+                        this.rageBar.removePlayer((ServerPlayerEntity) (Object) this);
+                    }
+                    if (AbilitiesCommand.serverBossBars.contains(rageBar)) {
+                        AbilitiesCommand.serverBossBars.remove(rageBar);
+                    }
+                }
+            }*/
+        }
+        super.setHealth(health);
+    }
 }

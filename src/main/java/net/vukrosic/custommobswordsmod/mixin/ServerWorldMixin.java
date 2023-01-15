@@ -25,8 +25,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Mixin(ServerWorld.class)
 public abstract class ServerWorldMixin extends World implements StructureWorldAccess {
@@ -44,24 +46,40 @@ public abstract class ServerWorldMixin extends World implements StructureWorldAc
             }
         }
 
-        if(SetHunterCommand.hunters.size() == 0){
-            if(SetHunterCommand.huntersUUIDs.size() != 0){
-                for(UUID uuid : SetHunterCommand.huntersUUIDs){
-                    SetHunterCommand.hunters.add(getPlayerByUuid(uuid));
+        //if(SetHunterCommand.hunters.size() == 0){
+        setHuntersFromUuids();
+        //}
+        //sendHunterUuidsToClients();
+
+    }
+
+    private void setHuntersFromUuids() {
+        if(SetHunterCommand.huntersUUIDs.size() != 0){
+            // get a list of players
+            SetHunterCommand.hunters = (ArrayList<PlayerEntity>) this.getPlayers().stream().filter(player -> SetHunterCommand.huntersUUIDs.contains(player.getUuid())).collect(Collectors.toList());
+
+            for(UUID uuid : SetHunterCommand.huntersUUIDs){
+                PlayerEntity player = getPlayerByUuid(uuid);
+                if(player != null){
+                    if(!SetHunterCommand.hunters.contains(player)){
+                        SetHunterCommand.hunters.add(player);
+                    }
                 }
             }
         }
-        // create new buffer new PacketByteBuf(Unpooled.buffer())
-        /*
-        PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
-        buffer.writeBoolean(false);
-        if(SetHunterCommand.pray != null && ThrowingAnimationManager.throwingPlayer != null) {
-            buffer.writeBoolean(true);
-            buffer.writeUuid(ThrowingAnimationManager.throwingPlayer.getUuid());
-            ServerPlayNetworking.send((ServerPlayerEntity)SetHunterCommand.pray, ModMessages.EVERY_TICK, buffer);
-        }*/
-
     }
+/*
+    private void sendHunterUuidsToClients() {
+        if(SetHunterCommand.huntersUUIDs.size() != 0){
+            PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+            for(UUID uuid : SetHunterCommand.huntersUUIDs){
+                buf.writeUuid(uuid);
+            }
+            for(PlayerEntity player : this.getPlayers()){
+                ServerPlayNetworking.send((ServerPlayerEntity)player, ModMessages.HUNTER_UUIDS, buf);
+            }
+        }
+    }*/
 
     private static void setPrerAndHunters() {
 

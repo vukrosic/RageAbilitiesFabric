@@ -11,7 +11,8 @@
     "ServerWorldMixin",
     "PlayerEntityMixin",
     "BipedEntityModelMixin",
-    "EnderPearlEntityMixin"
+    "EnderPearlEntityMixin",
+    "MobEntityMixin"
   ],
   "client": [
     "InGameHudMixin",

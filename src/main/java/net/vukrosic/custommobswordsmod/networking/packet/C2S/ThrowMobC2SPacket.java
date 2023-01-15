@@ -14,6 +14,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
+import net.vukrosic.custommobswordsmod.command.AbilitiesCommand;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.entity.custom.LivingEntityExt;
 import net.vukrosic.custommobswordsmod.entity.custom.PlayerEntityExt;
@@ -29,15 +30,16 @@ public class ThrowMobC2SPacket {
     public static void receive(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler,
                                PacketByteBuf buf, PacketSender responseSender) {
         if (SetHunterCommand.pray != null && player.getUuid() == SetHunterCommand.pray.getUuid()) {
-            //throwBlocks(player);
+            // throwBlocks(player);
             //((PlayerEntityExt) player).throwBlocks();
             if (PlayerAbilities.pickedEntities != null) {
                 float throwForce = 1;
                 Vec3d direction = getLookDirection(player, throwForce);
+                direction.subtract(0,AbilitiesCommand.mobThrowTowardsGround,0);
                 // throw all mobs in PlayerAbilities.pickedEntities
                 for (LivingEntity entity : PlayerAbilities.pickedEntities) {
                     entity.setNoGravity(false);
-                    entity.setVelocity(direction.multiply(7));
+                    entity.setVelocity(direction.multiply(AbilitiesCommand.mobThrowForce));
                     ((LivingEntityExt) entity).setPicker(null);
                     ((LivingEntityExt) entity).setBeingThrownByPrey(true);
                 }

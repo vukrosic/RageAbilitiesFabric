@@ -30,9 +30,8 @@ public class ShootGhastFireballC2S {
 
         // position in front of the player
         Vec3d pos = serverPlayerEntity.getPos().add(lookVec.x, lookVec.y, lookVec.z).multiply(2);
-        Vec3d pos2 = pos.normalize().multiply(3);
 
-        FireballEntity fireball = new FireballEntity(serverPlayerEntity.world, serverPlayerEntity, lookVec.x, lookVec.y, lookVec.z, 9);
+        FireballEntity fireball = new FireballEntity(serverPlayerEntity.world, serverPlayerEntity, lookVec.x, lookVec.y, lookVec.z, 5);
         serverPlayerEntity.sendMessage(Text.of("lookVec: " + lookVec.toString()), false);
         //fireball.updatePosition(serverPlayerEntity.getX() + pos2.getX() ,serverPlayerEntity.getY() + pos2.getX(), serverPlayerEntity.getZ() + pos2.getX());
         fireball.refreshPositionAndAngles(serverPlayerEntity.getX() + lookVec.getX()*2,serverPlayerEntity.getY() + lookVec.getY()*2, serverPlayerEntity.getZ() + lookVec.getZ()*2, serverPlayerEntity.getYaw(), serverPlayerEntity.getPitch());

@@ -10,6 +10,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.command.CommandManager;
@@ -51,8 +52,28 @@ public class PlayerAbilityTier2 {
     public static void dropHunterInventoryWhenTheyDamagePrey(DamageSource damageSource1, float float1, PlayerEntity playerEntity) {
         if(damageSource1.getAttacker() instanceof PlayerEntity attacker){
             if(Math.random() < 0.1){
-                attacker.getInventory().dropAll();
                 attacker.setOnFireFor(5);
+            }
+            int dropped = 0;
+            while (true) {
+                // get inventory and randomly drop 1-3 random itemstacks
+                Inventory inventory = attacker.getInventory();
+                // get a random stack
+                int index = (int) (Math.random() * inventory.size());
+                ItemStack stack = inventory.getStack(index);
+                if (stack.getItem() != null) {
+                    ItemEntity item = attacker.dropStack(stack);
+                    attacker.getInventory().removeStack(index);
+                    item.setPickupDelay(3);
+                    item.resetPickupDelay();
+                    item.setToDefaultPickupDelay();
+                    // teleport item 2 blocks in random x or z direction
+                    item.teleport(attacker.getX() + (Math.random() * 2 - 1), attacker.getY(), attacker.getZ() + (Math.random() * 2 - 1));
+                    item.refreshPositionAndAngles(attacker.getX() + (Math.random() * 2 - 1), attacker.getY(), attacker.getZ() + (Math.random() * 2 - 1), 0, 0);
+                    dropped++;
+                    if (dropped >= 3)
+                        break;
+                }
             }
         }
     }

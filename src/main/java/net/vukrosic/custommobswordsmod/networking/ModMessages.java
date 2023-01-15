@@ -21,8 +21,9 @@ public class ModMessages {
     public static final Identifier THROW_MOBS_ANIMATION = new Identifier(CustomMobSwordsMod.MOD_ID, "throw_mobs_animation");
     public static final Identifier SHOOT_GHAST_FIREBALL = new Identifier(CustomMobSwordsMod.MOD_ID, "shoot_ghast_fireball");
     public static final Identifier BOUNCE_BLOCKS = new Identifier(CustomMobSwordsMod.MOD_ID, "bounce_blocks");
-    public static final Identifier SET_HUNTERS_COMMAND = new Identifier(CustomMobSwordsMod.MOD_ID, "set_hunters_command");
+    //public static final Identifier SET_HUNTERS_COMMAND = new Identifier(CustomMobSwordsMod.MOD_ID, "set_hunters_command");
     public static final Identifier TEST_ITEM_ENLARGEMENT = new Identifier(CustomMobSwordsMod.MOD_ID, "test_item_enlargement");
+    public static final Identifier HUNTER_UUIDS = new Identifier(CustomMobSwordsMod.MOD_ID, "hunter_uuids");;
 
 
     public static void registerC2SPacket(){
@@ -39,10 +40,11 @@ public class ModMessages {
         ClientPlayNetworking.registerGlobalReceiver(LIFT_MOBS_ANIMATION, LiftMobsAnimationS2CPacket::receive);
         ClientPlayNetworking.registerGlobalReceiver(THROW_MOBS_ANIMATION, ThrowMobsAnimationS2CPacket::receive);
         ClientPlayNetworking.registerGlobalReceiver(SET_PREY, SetHunterCommandS2CPacket::receive);
+        ClientPlayNetworking.registerGlobalReceiver(HUNTER_UUIDS, SetHunterCommandHunterS2CPacket::receive);
         ClientPlayNetworking.registerGlobalReceiver(SET_BOUNCING, SetBouncingS2CPacket::receive);
         ClientPlayNetworking.registerGlobalReceiver(EVERY_TICK, EveryTickS2C::receive);
         ClientPlayNetworking.registerGlobalReceiver(BOUNCE_BLOCKS, BounceBlocksS2CPacket::receive);
-        ClientPlayNetworking.registerGlobalReceiver(SET_HUNTERS_COMMAND, SetHunterCommandS2CPacket::receive);
+        //ClientPlayNetworking.registerGlobalReceiver(SET_HUNTERS_COMMAND, SetHunterCommandS2CPacket::receive);
         ClientPlayNetworking.registerGlobalReceiver(TEST_ITEM_ENLARGEMENT, TestItemEnlargementS2CPacket::receive);
     }
 }

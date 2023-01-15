@@ -2,11 +2,9 @@ package net.vukrosic.custommobswordsmod.networking.packet.C2S;
 
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.block.AnvilBlock;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LightningEntity;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.*;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.Items;
@@ -14,7 +12,10 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.util.abilities.PlayerAbilities;
@@ -103,6 +104,21 @@ public class SpawnLightningC2SPacket {
             mod.world.spawnEntity(dripStone);
 
 
+
+            // make a block state
+            BlockState state = Blocks.POINTED_DRIPSTONE.getDefaultState();
+            BlockPos pos = new BlockPos(mod.getBlockPos().getX(), mod.getBlockPos().getY() + 5, mod.getBlockPos().getZ());
+            BlockPos.Mutable mutable = pos.mutableCopy();
+            FallingBlockEntity fallingBlockEntity = FallingBlockEntity.spawnFromBlock(mod.world, mutable, state);
+            int i = Math.max(1 + pos.getY() - mutable.getY(), 6);
+            float f = 1.0F * (float)i;
+            fallingBlockEntity.setHurtEntities(f, 40);
+            mutable.move(Direction.DOWN);
+            mod.world.spawnEntity(fallingBlockEntity);
+        }
+
+
+
         }
         /*
         for(int i = 0; i < 15; i++){
@@ -118,5 +134,5 @@ public class SpawnLightningC2SPacket {
             player.world.setBlockState(player.getBlockPos().add(x, y, z), Blocks.POINTED_DRIPSTONE.getDefaultState());
             AnvilBlock anvilBlock = (AnvilBlock) Blocks.ANVIL;
         }*/
-    }
+    //}
 }

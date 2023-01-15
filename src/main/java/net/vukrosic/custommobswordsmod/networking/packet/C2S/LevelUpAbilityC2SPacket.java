@@ -6,13 +6,17 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.vukrosic.custommobswordsmod.command.AbilitiesCommand;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.util.abilities.*;
 
 public class LevelUpAbilityC2SPacket {
     public static void receive(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler,
                                PacketByteBuf buf, PacketSender responseSender) {
+        // remove boss bar
+
         if (SetHunterCommand.pray != null && player.getUuid() == SetHunterCommand.pray.getUuid()) {
+            AbilitiesCommand.hitBossBarDisable(player.getCommandSource());
             PlayerAbilities.levelUp();
             if(PlayerAbilities.ActiveAbility){
                 upgradeActiveAbility(player);

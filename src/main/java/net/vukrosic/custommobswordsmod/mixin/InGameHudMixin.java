@@ -10,6 +10,7 @@ import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.random.Random;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.item.ModItems;
@@ -47,9 +48,25 @@ public abstract class InGameHudMixin extends DrawableHelper implements InGameHud
 
     @Inject(method = "renderHotbarItem", at = @At("HEAD"))
     private void renderHotbar(int x, int y, float tickDelta, PlayerEntity player, ItemStack stack, int seed, CallbackInfo ci) {
-        if (PlayerAbilities.AbilityTier == 3 && player.isOnFire()
-                && SetHunterCommand.pray != null && SetHunterCommand.pray.equals(player.getUuid())) {
+        if (PlayerAbilities.inventoryShouldBurn) {
             this.itemRenderer.renderInGuiWithOverrides(player, ModItems.FIRE_ITEM.getDefaultStack(), x, y, seed);
         }
+
+        player.sendMessage(Text.of("SetHunterCommand.prey is null = " + (SetHunterCommand.pray == null)), false);
+        player.sendMessage(Text.of("SetHunterCommand.prey is null = " + (SetHunterCommand.pray == null)), false);
+        /*
+        if(SetHunterCommand.pray != null){
+            if(Math.random() < 0.05) {
+                SetHunterCommand.pray.sendMessage(Text.of("player.getUuid() = " + player.getUuid()), false);
+                SetHunterCommand.pray.sendMessage(Text.of("SetHunterCommand.prayUuid = " + SetHunterCommand.prayUuid), false);
+                SetHunterCommand.pray.sendMessage(Text.of("player.isOnFire() = " + player.isOnFire()), false);
+            }
+        }
+        if (PlayerAbilities.AbilityTier == 3 && player.isOnFire()
+                && SetHunterCommand.prayUuid != null ) {
+            if (!SetHunterCommand.prayUuid.equals(player.getUuid())){
+                this.itemRenderer.renderInGuiWithOverrides(player, ModItems.FIRE_ITEM.getDefaultStack(), x, y, seed);
+            }
+        }*/
     }
 }

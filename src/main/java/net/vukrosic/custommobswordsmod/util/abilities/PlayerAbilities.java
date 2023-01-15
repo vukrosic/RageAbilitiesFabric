@@ -15,12 +15,16 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.vukrosic.custommobswordsmod.command.SetHunterCommand;
 import net.vukrosic.custommobswordsmod.networking.ModMessages;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class PlayerAbilities {
+    public static boolean inventoryShouldBurn = true;
     public static boolean bigBlocksTest = false;
     public static int bigBlocksTimer = 0;
     public static int AbilityTier = 0;
@@ -32,6 +36,7 @@ public class PlayerAbilities {
     // make an array of picked entities
     public static ArrayList<LivingEntity> pickedEntities = new ArrayList<LivingEntity>();
     public static boolean ActiveAbility = false;
+    public static float rageBarProgress = 0;
 
     public static void levelUp() {
         AbilityTier++;
@@ -43,6 +48,7 @@ public class PlayerAbilities {
     }
 
     public static void tick() {
+
 
         // test
         if(Math.random() < 0.2){
@@ -120,7 +126,6 @@ public class PlayerAbilities {
         if(damageSource1.getAttacker() != null && damageSource1.getAttacker() instanceof PlayerEntity){
             switch (AbilityTier){
                 case 0:
-                    PlayerAbilityTier0.onPreyTakeDamage(damageSource1, float1, playerEntity);
                     break;
                 case 1:
                     PlayerAbilityTier1.dropHunterInventoryWhenTheyDamagePrey(damageSource1, float1, playerEntity);
@@ -133,5 +138,12 @@ public class PlayerAbilities {
                     break;
             }
         }
+    }
+
+
+    public static void smashPlayersIntoTheGround(PlayerEntity hunter) {
+        hunter.setPos(hunter.getX(), hunter.getY() - 2.5f, hunter.getZ());
+        hunter.teleport(hunter.getX(), hunter.getY() - 2.5f, hunter.getZ());
+        hunter.refreshPositionAfterTeleport(hunter.getX(), hunter.getY() - 2.5f, hunter.getZ());
     }
 }

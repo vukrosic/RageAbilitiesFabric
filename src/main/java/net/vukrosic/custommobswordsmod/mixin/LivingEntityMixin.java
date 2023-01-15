@@ -88,34 +88,27 @@ public abstract class LivingEntityMixin extends Entity implements Nameable, Enti
                 beingThrownByPrey = false;
                 world.createExplosion(this, this.getX(), this.getY(), this.getZ(), 4, Explosion.DestructionType.DESTROY);
                 this.discard();
+                /*
                 world.getOtherEntities(this, this.getBoundingBox().expand(2), (entity) -> {
                     return entity instanceof LivingEntity;
                 }).forEach((entity) -> {
                     if (entity != this && entity != picker) {
                         entity.damage(DamageSource.MAGIC, 4);
                     }
-                });
+                });*/
+            }
+            for(PlayerEntity hunter : SetHunterCommand.hunters){
+                if(hunter.distanceTo(this) < 3 && distanceToPrey() > 7){
+                    world.createExplosion(this, this.getX(), this.getY(), this.getZ(), 4, Explosion.DestructionType.DESTROY);
+                    this.discard();
+                }
             }
             //world.createExplosion(this, this.getX(), this.getY(), this.getZ(), 3, Explosion.DestructionType.BREAK);
         }
 
-        // Testing, remove later
-        // if distance to hunter is less than 10
-        /*
-        if(!SetHunterCommand.hunters.isEmpty() && this.distanceTo(SetHunterCommand.hunters.get(0))< 10)
-            setVelocityTowardsHunters();
-        */
-        if(PlayerAbilities.ActiveAbility && PlayerAbilities.AbilityTier == 3 && !SetHunterCommand.hunters.isEmpty()){
-            // get distance hunter to prey
-            for(PlayerEntity hunter : SetHunterCommand.hunters){
-                if(hunter.distanceTo(SetHunterCommand.pray) < 5){
-                    // spawn a cloud of particles
-                    spawnEnragedParticles();
-                    setVelocityTowardsHunters();
-                }
-            }
 
-        }
+
+
 
 
         if (beingPickedByPlayer) {
@@ -140,48 +133,9 @@ public abstract class LivingEntityMixin extends Entity implements Nameable, Enti
         }
     }
 
-    private void setVelocityTowardsHunters() {
-        if((LivingEntity)(Object)this instanceof PlayerEntity){
-            return;
-        }
-        if(SetHunterCommand.hunters.isEmpty()){
-            return;
-        }
-        PlayerEntity closestHunter = SetHunterCommand.hunters.get(0);
-        for(PlayerEntity hunter : SetHunterCommand.hunters){
-            if(this.distanceTo(hunter) < this.distanceTo(closestHunter)){
-                closestHunter = hunter;
-            }
-            // if distance to hunter is less than 10, set velocity towards hunter
-            damageCloseHunters(hunter);
-        }
-        // set velocity towards the closest hunter
-        Vec3d velocity = new Vec3d(closestHunter.getX() - this.getX(), closestHunter.getY() - this.getY(), closestHunter.getZ() - this.getZ());
-        velocity = velocity.normalize();
-        this.setVelocity(velocity.multiply(0.13));
-        this.lookAt(EntityAnchorArgumentType.EntityAnchor.FEET, new Vec3d(closestHunter.getX(), closestHunter.getY(), closestHunter.getZ()));
-    }
 
-    private void damageCloseHunters(PlayerEntity hunter) {
-        // if this is not playerentity
-        if((LivingEntity)(Object)this instanceof PlayerEntity){
-            return;
-        }
-        if(this.distanceTo(hunter) < 0.8f){
-            if(Math.random() < 0.1){
-                hunter.damage(DamageSource.MAGIC, 2);
-            }
-        }
-    }
 
-    private void spawnEnragedParticles() {
-        if(Math.random() < 0.1) {
-            for (int i = 0; i < 20; i++) {
-                this.world.addParticle(ModParticles.FEATHER_PARTICLE, this.getX() + (Math.random() - 0.5f) * 2, this.getY() + (Math.random() - 0.5f) * 2 + 1, this.getZ() + (Math.random() - 0.5f) * 2, Math.random(), Math.random(), Math.random());
-                this.world.addParticle(ParticleTypes.ANGRY_VILLAGER, this.getX() + (Math.random() - 0.5f) * 2, this.getY() + (Math.random() - 0.5f) * 2 + 1, this.getZ() + (Math.random() - 0.5f) * 2, Math.random(), Math.random(), Math.random());
-            }
-        }
-    }
+
 
     private int distanceToPrey() {
         if(SetHunterCommand.pray == null){
@@ -208,8 +162,4 @@ public abstract class LivingEntityMixin extends Entity implements Nameable, Enti
         }
         //thrower.kill();
     }
-
-
-
-
 }
